@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+background-color: white; /* Ensure the iframe has a white background */
+}
+							
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT Asset Performance Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:13px;background:#DEEBEB;color:#1a1a1a;line-height:1.5}
+:root{
+  --teal-l2:#DEEBEB;--teal-l1:#BCD8D7;--teal:#9BC4C2;
+  --teal-h:#5B9B98;--teal-d1:#447472;--teal-d2:#2E4E4C;--teal-d3:#005958;
+  --en:#F7B348;--en-d:#E5900A;--en-l:#FDF0DA;
+  --wa:#579FD2;--wa-d:#2F7AB0;--wa-l:#DDECF6;
+  --gr:#00B050;--rd:#FF3300;--yw:#F7B348;
+  --off:#6DA275;--ret:#E07040;--log:#0D6073;
+  --gl:#E5E6E6;--gm:#7F8081;--gd:#5F6061;
+}
+/* ── HEADER ── */
+.hdr{background:var(--teal-d3);color:#fff;padding:13px 28px;display:flex;
+  justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.hdr-l{display:flex;flex-direction:column;gap:3px}
+.hdr-l h1{font-size:16px;font-weight:700;letter-spacing:.3px}
+.hdr-l .sub{font-size:11px;opacity:.8}
+.hdr-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.hdr-meta{text-align:right;font-size:11px;opacity:.8;line-height:1.8}
+.nav-links{display:flex;gap:6px}
+.nav-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;
+  background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.5);
+  border-radius:5px;font-size:11px;font-weight:700;text-decoration:none;
+  transition:background .15s;white-space:nowrap}
+.nav-btn:hover{background:rgba(255,255,255,.3)}
+/* ── ASSET SELECTOR BAR ── */
+.asset-bar{background:var(--teal-d2);padding:12px 28px;display:flex;
+  align-items:center;gap:14px;flex-wrap:wrap;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);position:sticky;top:0;z-index:100}
+.ab-lbl{font-size:12px;font-weight:700;color:rgba(255,255,255,.8);white-space:nowrap}
+.ab-select{padding:7px 32px 7px 12px;border-radius:5px;
+  border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;
+  font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;min-width:200px}
+.ab-select:focus{outline:none;border-color:rgba(255,255,255,.6)}
+.ab-select option{background:#2E4E4C;color:#fff}
+.ab-select optgroup{background:#1a3330;color:rgba(255,255,255,.7);font-weight:700}
+.pbadge{display:inline-block;padding:4px 11px;border-radius:4px;
+  font-size:11px;font-weight:700;color:#fff;letter-spacing:.3px}
+.pbadge.Office{background:var(--off)}.pbadge.Retail{background:var(--ret)}.pbadge.Logistics{background:var(--log)}
+
+/* ── CUSTOM ASSET DROPDOWN ── */
+.cdd-wrap{position:relative;min-width:220px}
+.cdd-trigger{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 32px 7px 12px;border-radius:5px;
+  border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);
+  color:#fff;font-size:13px;font-weight:600;font-family:inherit;
+  cursor:pointer;user-select:none;gap:8px;white-space:nowrap}
+.cdd-trigger:hover{border-color:rgba(255,255,255,.6)}
+.cdd-trigger svg{flex-shrink:0;transition:transform .2s}
+.cdd-trigger.open svg{transform:rotate(180deg)}
+.cdd-list{display:none;position:absolute;top:calc(100% + 6px);left:0;
+  min-width:260px;max-height:320px;overflow-y:auto;
+  background:#2E4E4C;border:1.5px solid rgba(255,255,255,.25);
+  border-radius:6px;z-index:9999;box-shadow:0 6px 24px rgba(0,0,0,.4);
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+.cdd-list.open{display:block}
+.cdd-list::-webkit-scrollbar{width:5px}
+.cdd-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:3px}
+.cdd-group-label.Office   { color: #fff; background: #6DA275; padding: 8px 12px; font-size: 15px; font-weight: 700}
+.cdd-group-label.Retail   { color: #fff; background: #E07040; padding: 8px 12px; font-size: 15px; font-weight: 700;}
+.cdd-group-label.Logistics{ color: #fff; background: #0D6073; padding: 8px 12px; font-size: 15px; font-weight: 700;}
+.cdd-group-label:first-child{border-top:none}
+.cdd-item{padding:7px 16px;color:#fff;font-size:12px;cursor:pointer;
+  transition:background .12s;white-space:nowrap}
+.cdd-item:hover{background:rgba(255,255,255,.15)}
+.cdd-item.selected{background:rgba(255,255,255,.22);font-weight:700}
+
+/* ── PAGE ── */
+.page{max-width:1440px;margin:0 auto;padding:20px 24px 48px}
+/* ── SECTION ── */
+.sec{margin-bottom:24px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.09)}
+.sec-hd{background:var(--teal-h);color:#fff;padding:11px 18px;
+  display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.sec-bd{background:#fff;padding:18px;border:1px solid var(--teal-l1);border-top:none}
+/* ── SUMMARY KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.kpi-grid{grid-template-columns:1fr}}
+.kpi-card{border-radius:6px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.1);display:flex;flex-direction:column}
+.kpi-top{display:flex;align-items:stretch}
+.kpi-ico{width:44px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.kpi-ico.en{background:var(--en-l)}.kpi-ico.wa{background:var(--wa-l)}.kpi-ico.ws{background:#E8F5E9}
+.kpi-body{flex:1;padding:11px 13px}
+.kpi-lbl{font-size:10px;color:var(--gm);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.kpi-val{font-size:28px;font-weight:700;line-height:1.15;margin-top:2px}
+.kpi-unit{font-size:13px;font-weight:400;color:#888}
+.kpi-tgt{font-size:11px;color:var(--gd);margin-top:2px}
+.kpi-badge-wrap{flex-shrink:0;align-self:center;margin:0 10px;padding:4px 8px}
+.kbadge{flex-shrink:0;padding:5px 10px;border-radius:3px;font-size:18px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.3}
+.bg-gr{background:#E8F5E9;color:#1B5E20}.bg-yw{background:#FFF3CD;color:#856404}.bg-rd{background:#FFEBEE;color:#B71C1C}
+.kpi-foot{padding:6px 13px;border-top:1px solid var(--gl);font-size:12px;color:var(--gm);display:flex;justify-content:space-between;align-items:center}
+.dq-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+/* ── FILTER / CONTROL BAR ── */
+.ctrl-row{background:var(--teal-l2);border:1px solid var(--teal-l1);border-radius:6px;
+  padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ctrl-lbl{font-size:11px;font-weight:700;color:var(--teal-d2);white-space:nowrap;margin-right:2px}
+.ctrl-sep{color:var(--teal-l1);font-size:18px;padding:0 3px;line-height:1}
+.tbtn{padding:5px 12px;border:2px solid var(--bc,#888);border-radius:4px;font-size:11px;
+  font-weight:700;cursor:pointer;background:#fff;color:var(--bc,#888);
+  transition:all .15s;white-space:nowrap}
+.tbtn.active{background:var(--bc,#888);color:#fff}.tbtn:hover{opacity:.82}
+/* ── CHARTS ── */
+.cwrap{position:relative;width:100%}
+.cwrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.cwrap-trend{height:380px}
+/* ── COLOR LEGEND ── */
+.color-legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--gd)}
+.cl-item{display:flex;align-items:center;gap:5px}
+.cl-sw{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+/* ── NABERS MINI CHARTS ── */
+.nabers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:800px){.nabers-grid{grid-template-columns:1fr}}
+.nb-mini{border-radius:6px;overflow:hidden;box-shadow:0 1px 5px rgba(0,0,0,.09);
+  border:1px solid var(--teal-l1)}
+.nb-mini-hd{padding:8px 13px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+.nb-mini-body{position:relative;height:220px;background:#fff}
+.nb-mini-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.nb-empty{display:flex;align-items:center;justify-content:center;height:100%;
+  color:var(--gm);font-size:12px;font-style:italic;padding:20px;text-align:center}
+/* ── NABERS GUIDE ── */
+.nb-guide{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:10.5px}
+.nb-g-item{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px}
+/* ── NOTES ── */
+.note{background:#FFF8E1;border-left:3px solid var(--yw);padding:8px 12px;
+  font-size:11.5px;border-radius:0 4px 4px 0;margin:8px 0}
+.mb10{margin-bottom:10px}
+/* ── FOOTER ── */
+.ftr{background:var(--teal-d2);color:#fff;padding:13px 28px;text-align:center;font-size:11px;opacity:.92;margin-top:24px}
+</style>
+</head>
+<body>
+
+<!-- ████ HEADER ████ -->
+<header class="hdr">
+  <div class="hdr-l">
+    <h1>🏗️ GPT Group · Asset Performance Dashboard</h1>
+    <div class="sub">Building Performance Team &nbsp;·&nbsp; MAT: Jul 2025 – Jun 2026 &nbsp;·&nbsp; Data Source: Envizi Platform</div>
+  </div>
+  <div class="hdr-r">
+    <div class="nav-links">
+      <a href="01.dashboard.html" class="nav-btn">← Performance Report</a>
+    </div>
+    <div class="hdr-meta">
+      <div>Reporting Period: <strong>June 2026</strong></div>
+      <div>MAT End: 30 June 2026</div>
+    </div>
+  </div>
+</header>
+
+<!-- ████ ASSET SELECTOR ████ -->
+<div class="asset-bar">
+  <span class="ab-lbl">Select Asset:</span>
+  <div class="cdd-wrap" id="assetSelectWrap">
+  <div class="cdd-trigger" id="assetSelectTrigger" onclick="toggleCDD()">
+    <span id="assetSelectLabel">— Select Asset —</span>
+    <svg width="12" height="8" viewBox="0 0 12 8" fill="none"
+         stroke="white" stroke-width="1.5">
+      <path d="M1 1l5 5 5-5"/>
+    </svg>
+  </div>
+  <div class="cdd-list" id="assetSelectList"></div>
+</div>
+  <span id="portBadge" class="pbadge">—</span>
+  <span id="assetName" style="color:rgba(255,255,255,.6);font-size:11px;margin-left:4px"></span>
+</div>
+
+<!-- ████ PAGE ████ -->
+<div class="page">
+
+<!-- ══ SECTION 1 — SUMMARY ══ -->
+<section class="sec" id="s-summary">
+  <div class="sec-hd" id="summaryTitle">📊 Asset Performance Summary — MAT to June 2026</div>
+  <div class="sec-bd" id="summaryBody">
+    <p style="padding:20px;text-align:center;color:var(--gm)">Loading…</p>
+  </div>
+</section>
+
+<!-- ══ SECTION 2 — PERFORMANCE TRENDS ══ -->
+<section class="sec">
+  <div class="sec-hd">📈 Performance Trends — Monthly Consumption by Year</div>
+  <div class="sec-bd">
+
+    <div class="ctrl-row">
+      <span class="ctrl-lbl">Year:</span>
+      <!-- 2024 OFF, 2025 ON, 2026 ON by default -->
+      <button class="tbtn"        style="--bc:#9BC4C2" id="yr2024btn" onclick="toggleYear(2024,this)">2024</button>
+      <button class="tbtn active" style="--bc:#5B9B98" id="yr2025btn" onclick="toggleYear(2025,this)">2025</button>
+      <button class="tbtn active" style="--bc:#005958" id="yr2026btn" onclick="toggleYear(2026,this)">2026</button>
+      <span class="ctrl-sep">|</span>
+      <span class="ctrl-lbl">Data Type:</span>
+      <!-- Electricity ON, Solar/Gas/Water OFF by default -->
+      <button class="tbtn active" style="--bc:#E5900A" id="typeElecBtn"  onclick="toggleType('electricity',this)">⚡ Electricity</button>
+      <button class="tbtn"        style="--bc:#00B050" id="typeSolarBtn" onclick="toggleType('solar',this)">☀️ Solar</button>
+      <button class="tbtn"        style="--bc:#C2400C" id="typeGasBtn"   onclick="toggleType('naturalGas',this)">🔥 Natural Gas</button>
+      <button class="tbtn"        style="--bc:#2F7AB0" id="typeWaterBtn" onclick="toggleType('water',this)">💧 Water</button>
+    </div>
+
+    <div class="color-legend" id="trendLegend"></div>
+
+    <div class="note mb10">
+      Left axis: <strong>⚡ kWh</strong> (Electricity &amp; Solar) &nbsp;|&nbsp;
+      Inner‑left axis: <strong>🔥 MJ</strong> (Natural Gas — scaled 1:3.6 of kWh so equal‑energy bars align) &nbsp;|&nbsp;
+      Right axis: <strong>💧 kL</strong> (Water) &nbsp;|&nbsp;
+      Y‑axes scale dynamically to visible data.
+    </div>
+
+    <div class="cwrap cwrap-trend"><canvas id="cTrend"></canvas></div>
+  </div>
+</section>
+
+<!-- ══ SECTION 3 — NABERS ══ -->
+<section class="sec">
+  <div class="sec-hd">⭐ NABERS — Lastest Ratings per Category</div>
+  <div class="sec-bd">
+
+    <div class="nb-guide">
+      <div class="nb-g-item" style="background:#FFEBEE;color:#B71C1C"><strong>0–1.5★</strong> Poor</div>
+      <div class="nb-g-item" style="background:#FFF0E0;color:#7B3200"><strong>2.0–2.5★</strong> Below Avg</div>
+      <div class="nb-g-item" style="background:#FFF3CD;color:#856404"><strong>3.0–3.5★</strong> Average</div>
+      <div class="nb-g-item" style="background:#F0F7F0;color:#3A7A3A"><strong>4.0–4.5★</strong> Good</div>
+      <div class="nb-g-item" style="background:#E8F5E9;color:#1B5E20"><strong>5.0–5.5★</strong> High</div>
+      <div class="nb-g-item" style="background:#E0F5F5;color:#005958"><strong>6.0★</strong> Excellent</div>
+    </div>
+
+    <div class="note mb10">
+      X‑axis shows rating period start and end. Y-axis shows star rating results 0.0 - 6.0 ★.
+    </div>
+
+    <div class="nabers-grid" id="nabersGrid">
+      <!-- Energy -->
+      <div class="nb-mini" id="nb-energy-card">
+        <div class="nb-mini-hd" style="background:rgba(229,144,10,.12);color:#8A4200">
+          ⚡ NABERS Energy
+        </div>
+        <div class="nb-mini-body" id="nb-energy-body"><canvas id="cNabEnergy"></canvas></div>
+      </div>
+      <!-- Water -->
+      <div class="nb-mini" id="nb-water-card">
+        <div class="nb-mini-hd" style="background:rgba(47,122,176,.12);color:#1A4F80">
+          💧 NABERS Water          
+        </div>
+        <div class="nb-mini-body" id="nb-water-body"><canvas id="cNabWater"></canvas></div>
+      </div>
+      <!-- Waste -->
+      <div class="nb-mini" id="nb-waste-card">
+        <div class="nb-mini-hd" style="background:rgba(0,176,80,.12);color:#005A28">
+          ♻️ NABERS Waste          
+        </div>
+        <div class="nb-mini-body" id="nb-waste-body"><canvas id="cNabWaste"></canvas></div>
+      </div>
+      <!-- IE -->
+      <div class="nb-mini" id="nb-ie-card">
+        <div class="nb-mini-hd" style="background:rgba(80,186,184,.12);color:#1A6665">
+          🏅 Indoor Environment        
+        </div>
+        <div class="nb-mini-body" id="nb-ie-body"><canvas id="cNabIE"></canvas></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- /page -->
+
+<div class="ftr">
+  🏢 GPT Group · Building Performance Team · Asset Performance Dashboard ·
+  Data Source: Envizi Platform · MAT: Jul 2025 – Jun 2026 · Generated: July 2026
+</div>
+
+<!-- ████ SCRIPTS ████ -->
+<script src="data.js"></script>
+
+
+<script>
+'use strict';
+
+// ════════════════════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════════════════════
+let trendChart  = null;
+const NAB_CHARTS = {};
+let currentKey  = '';
+
+// Default: electricity ON, solar/gas/water OFF; 2025+2026 ON, 2024 OFF
+const VIS = {
+  types: { electricity:true, solar:false, naturalGas:false, water:false },
+  years: { 2024:false, 2025:true, 2026:true }
+};
+
+// ── Colours ──────────────────────────────────────────────────────────────────
+const TC = {
+  electricity:{ 2024:'#996007', 2025:'#E5900A', 2026:'#F7B348' },
+  solar:      { 2024:'#1A6B21', 2025:'#00B050', 2026:'#6CBF7B' },
+  naturalGas: { 2024:'#812B08', 2025:'#C2400C', 2026:'#F15D22' },
+  water:      { 2024:'#1F5275', 2025:'#2F7AB0', 2026:'#579FD2' }
+};
+const TYPE_META = {
+  electricity:{ label:'Electricity', unit:'kWh', yID:'y_kwh' },
+  solar:      { label:'Solar Gen.',  unit:'kWh', yID:'y_kwh' },
+  naturalGas: { label:'Natural Gas', unit:'MJ',  yID:'y_mj'  },
+  water:      { label:'Water',       unit:'kL',  yID:'y_kl'  }
+};
+const YEARS  = [2024, 2025, 2026];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── NABERS chart colours ──────────────────────────────────────────────────────
+const NAB_CFG = [
+  { key:'energy', label:'⚡ Energy', color:'#E5900A', bodyId:'nb-energy-body', canvasId:'cNabEnergy' },
+  { key:'water',  label:'💧 Water',  color:'#2F7AB0', bodyId:'nb-water-body',  canvasId:'cNabWater'  },
+  { key:'waste',  label:'♻️ Waste',  color:'#00B050', bodyId:'nb-waste-body',  canvasId:'cNabWaste'  },
+  { key:'ie',     label:'🏅 IE',     color:'#50BAB8', bodyId:'nb-ie-body',     canvasId:'cNabIE'     }
+];
+
+// ════════════════════════════════════════════════════════════════════════════
+//  INLINE CHART PLUGINS
+// ════════════════════════════════════════════════════════════════════════════
+
+// Draws the star rating as a label above each bar in NABERS mini charts
+const nabLabelPlugin = {
+  id: 'nabLabels',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((ds, dsIdx) => {
+      if(ds._isRef || ds._isEmpty) return;
+      const meta = chart.getDatasetMeta(dsIdx);
+      if(meta.hidden) return;
+      meta.data.forEach((bar, idx) => {
+        const v = ds.data[idx];
+        if(v == null || v === undefined) return;
+        ctx.save();
+        ctx.fillStyle   = ds.borderColor || '#444';
+        ctx.font        = 'bold 11px Segoe UI, sans-serif';
+        ctx.textAlign   = 'center';
+        ctx.textBaseline= 'bottom';
+        ctx.fillText(v.toFixed(1) + '★', bar.x, bar.y - 4);
+        ctx.restore();
+      });
+    });
+  }
+};
+
+// Draws "No ratings available" when the chart has no bar data
+const nabEmptyPlugin = {
+  id: 'nabEmpty',
+  afterDraw(chart) {
+    const hasData = chart.data.datasets.some(
+      ds => !ds._isRef && !ds._isEmpty && ds.data.some(v => v != null)
+    );
+    if(hasData) return;
+    const { ctx, width, height } = chart;
+    ctx.save();
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle    = '#bbb';
+    ctx.font         = '12px Segoe UI, sans-serif';
+    ctx.fillText('No ratings available', width / 2, height / 2);
+    ctx.restore();
+  }
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+function niceMax(v) {
+  if (!v || v <= 0) return 100;
+  // Small padding — just enough so the tallest bar isn't flush with the top
+  const raw = v * 1.0;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  // Round up to the nearest nice fraction of the magnitude
+  const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
+  for (const s of steps) {
+    if (norm <= s) return parseFloat((s * mag).toPrecision(4));
+  }
+  return 10 * mag;
+}
+
+function niceMin(v) {
+  if (v >= 0) return 0;
+  const raw  = Math.abs(v) * 1.15;
+  const mag  = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const steps = [1,1.2,1.5,2,2.5,3,4,5,6,7,8,9,10];
+  for (const s of steps) {
+    if (norm <= s) return -parseFloat((s * mag).toPrecision(4));
+  }
+  return -10 * mag;
+}
+
+function fmtKwh(v){ return Math.round(v).toLocaleString('en-AU'); }
+function fmtMj(v) { return Math.round(v).toLocaleString('en-AU'); }
+function fmtKl(v) { return Math.round(v).toLocaleString('en-AU'); }
+
+// Returns ["MMM-YY", "MMM-YY"] array for two-line tick labels
+function fmtNabPeriod(start, end) {
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const s=new Date(start+'T00:00:00'), e=new Date(end+'T00:00:00');
+  return [
+    `${M[s.getMonth()]}-${String(s.getFullYear()).slice(2)}`,
+    `${M[e.getMonth()]}-${String(e.getFullYear()).slice(2)}`
+  ];
+}
+
+function dqColor(dq){ if(dq>=98)return '#00B050'; if(dq>=95)return '#F7B348'; return '#FF3300'; }
+
+function ratingColor(r) {
+  if(r===null||r===undefined) return '#ccc';
+  if(r>=6)   return '#005958';
+  if(r>=5)   return '#00B050';
+  if(r>=4)   return '#6DA275';
+  if(r>=3)   return '#F7B348';
+  if(r>=2)   return '#E5900A';
+  return '#FF3300';
+}
+
+// Traffic light badges
+function badgeEW(a, t) {
+  if(a == null || t == null) return `<div class="kbadge" style="background:#eee;color:#999">N/A</div>`;
+  const d=(a-t)/t*100, s=d<0?'−':'+', v=Math.abs(d).toFixed(1);
+  const em=d<0?'🟢':d<=1.5?'🟡':'🔴';
+  const cl=d<0?'bg-gr':d<=1.5?'bg-yw':'bg-rd';
+  return `<div class="kbadge ${cl}">${s}${v}% ${em}</div>`;
+}
+function badgeWaste(a, t) {
+  if(a == null || t == null) return `<div class="kbadge" style="background:#eee;color:#999">N/A</div>`;
+  const pp=a-t, s=pp>=0?'+':'−', v=Math.abs(pp).toFixed(1);
+  const em=pp>0?'🟢':pp>=-1.5?'🟡':'🔴';
+  const cl=pp>0?'bg-gr':pp>=-1.5?'bg-yw':'bg-rd';
+  return `<div class="kbadge ${cl}">${s}${v}pp ${em}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DROPDOWN
+// ════════════════════════════════════════════════════════════════════════════
+// ── SCROLL SPEED MULTIPLIER ──────────────────────────────────────
+// < 1.0 = slower   |   1.0 = normal   |   > 1.0 = faster
+const SCROLL_SPEED = 0.4;
+
+// ════════════════════════════════════════════════════════════════
+//  CUSTOM DROPDOWN
+// ════════════════════════════════════════════════════════════════
+
+// ❌ REMOVE the old buildDropdown() entirely and REPLACE with:
+function buildDropdown() {
+  const list  = document.getElementById('assetSelectList');
+  const icons = { Office:'🏢', Retail:'🛍️', Logistics:'🏭' };
+  const groups = {};
+
+  ASSET_DATA.assetList.forEach(a => {
+    if(!groups[a.portfolio]) groups[a.portfolio] = [];
+    groups[a.portfolio].push(a);
+  });
+
+  Object.entries(groups).forEach(([port, assets]) => {
+    // Group heading
+    const grp = document.createElement('div');
+    grp.className   = `cdd-group-label ${port}`;
+    grp.textContent = `${icons[port]||''} ${port}`;
+    list.appendChild(grp);
+
+    // Items
+    assets.forEach(a => {
+      const item = document.createElement('div');
+      item.className      = 'cdd-item';
+      item.dataset.key    = a.key;
+      item.textContent    = a.display;
+      item.onclick = () => selectCDDItem(a.key, a.display);
+      list.appendChild(item);
+    });
+  });
+
+  // ── Controlled scroll speed ──────────────────────────────────
+  list.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    this.scrollTop += e.deltaY * SCROLL_SPEED;
+  }, { passive: false });
+}
+
+function toggleCDD() {
+  const trigger = document.getElementById('assetSelectTrigger');
+  const list    = document.getElementById('assetSelectList');
+  const isOpen  = list.classList.contains('open');
+  trigger.classList.toggle('open', !isOpen);
+  list.classList.toggle('open', !isOpen);
+}
+
+function selectCDDItem(key, label) {
+  // Update trigger label
+  document.getElementById('assetSelectLabel').textContent = label;
+  // Mark selected item
+  document.querySelectorAll('.cdd-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.key === key);
+  });
+  // Close dropdown
+  document.getElementById('assetSelectTrigger').classList.remove('open');
+  document.getElementById('assetSelectList').classList.remove('open');
+  // Load asset
+  loadAsset(key);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('assetSelectWrap');
+  if(wrap && !wrap.contains(e.target)) {
+    document.getElementById('assetSelectTrigger').classList.remove('open');
+    document.getElementById('assetSelectList').classList.remove('open');
+  }
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+//  LOAD ASSET
+// ════════════════════════════════════════════════════════════════════════════
+function loadAsset(key) {
+  currentKey = key;
+  const D = ASSET_DATA.assets[key];
+
+  const pb = document.getElementById('portBadge');
+  pb.textContent = D.portfolio;
+  pb.className   = `pbadge ${D.portfolio}`;
+  document.getElementById('assetName').textContent    = `· ${D.name}`;
+  document.getElementById('summaryTitle').textContent =
+    `📊 Asset Performance Summary — MAT to ${D.matPeriod}`;
+
+  renderSummary(D);
+  updateTrendChart(D);
+  updateNabersCharts(D);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SECTION 1 — SUMMARY
+// ════════════════════════════════════════════════════════════════════════════
+function renderSummary(D) {
+  const S = D.matSummary;
+function card(ico, cls, label, actual, target, unit, dq, badge) {
+  const actualStr = actual != null
+    ? `${actual.toLocaleString('en-AU',{maximumFractionDigits:1})} <span class="kpi-unit">${unit}</span>`
+    : `<span style="color:#bbb;font-size:28px">No data</span>`;
+  const targetStr = target != null
+    ? `Target: ${target.toLocaleString('en-AU',{maximumFractionDigits:1})} ${unit}`
+    : `<span style="color:#bbb">No target set</span>`;
+  const dqStr = dq != null
+    ? `<strong>${dq.toFixed(1)}%</strong>`
+    : `<strong style="color:#bbb">—</strong>`;
+  const dqDot = dq != null
+    ? `<span class="dq-dot" style="background:${dqColor(dq)}"></span>`
+    : `<span class="dq-dot" style="background:#ddd"></span>`;
+  return `
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-ico ${cls}">${ico}</div>
+        <div class="kpi-body">
+          <div class="kpi-lbl">${label}</div>
+          <div class="kpi-val">${actualStr}</div>
+          <div class="kpi-tgt">${targetStr}</div>
+        </div>
+        <div class="kpi-badge-wrap">${badge}</div>
+      </div>
+      <div class="kpi-foot">
+        <span>${dqDot}Data Quality</span>
+        ${dqStr}
+      </div>
+    </div>`;
+}
+  document.getElementById('summaryBody').innerHTML = `
+    <div class="kpi-grid">
+      ${card('⚡','en','ENERGY INTENSITY',S.energy.actual,S.energy.target,S.energy.unit,S.energy.dq,badgeEW(S.energy.actual,S.energy.target))}
+      ${card('💧','wa','WATER INTENSITY', S.water.actual, S.water.target, S.water.unit, S.water.dq, badgeEW(S.water.actual,S.water.target))}
+      ${card('♻️','ws','A-GRADE WASTE',   S.waste.actual, S.waste.target, S.waste.unit, S.waste.dq, badgeWaste(S.waste.actual,S.waste.target))}
+    </div>
+    <div class="note" style="margin-top:12px">
+      ℹ️ <strong>Traffic Light:</strong> &nbsp;
+      🟢 On / beating target &nbsp;|&nbsp; 🟡 Within 1.5% &nbsp;|&nbsp;
+      🔴 Beyond 1.5% &nbsp;|&nbsp; Waste shown as delta pp vs target.
+    </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SECTION 2 — TREND CHART
+// ════════════════════════════════════════════════════════════════════════════
+
+// Computes axis maxima from CURRENTLY VISIBLE data only (dynamic)
+function computeAxisMaxima(D) {
+  let maxKwh = 0, maxKl = 0;
+  let minKwh = 0, minKl = 0;  // ← NEW: track minimums
+  YEARS.forEach(yr => {
+    if(!VIS.years[yr]) return;
+    if(VIS.types.electricity)
+      (D.monthly.electricity[yr]||[]).forEach(v => {
+        if(v != null) {  // ← was: if(v) — blocked negatives & zeros
+          maxKwh = Math.max(maxKwh, v);
+          minKwh = Math.min(minKwh, v);
+        }
+      });
+    if(VIS.types.solar)
+      (D.monthly.solar[yr]||[]).forEach(v => {
+        if(v != null) {
+          maxKwh = Math.max(maxKwh, v);
+          minKwh = Math.min(minKwh, v);
+        }
+      });
+    if(VIS.types.naturalGas)
+      (D.monthly.naturalGas[yr]||[]).forEach(v => {
+        if(v != null) {
+          maxKwh = Math.max(maxKwh, v / 3.6);
+          minKwh = Math.min(minKwh, v / 3.6);  // ← handles negative gas
+        }
+      });
+    if(VIS.types.water)
+      (D.monthly.water[yr]||[]).forEach(v => {
+        if(v != null) {
+          maxKl = Math.max(maxKl, v);
+          minKl = Math.min(minKl, v);
+        }
+      });
+  });
+  const kwhMax = niceMax(maxKwh > 0 ? maxKwh : 100);
+  const kwhMin = niceMin(minKwh);  // ← NEW
+  const klMax  = niceMax(maxKl  > 0 ? maxKl  : 10);
+  const klMin  = niceMin(minKl);   // ← NEW
+  return {
+    kwhMax, kwhMin,
+    mjMax: kwhMax * 3.6, mjMin: kwhMin * 3.6,  // ← NEW
+    klMax, klMin                                 // ← NEW
+  };
+}
+
+function buildTrendDatasets(D) {
+  const ds = [];
+  Object.keys(TYPE_META).forEach(type => {
+    YEARS.forEach(yr => {
+      const raw = D.monthly[type][yr] || Array(12).fill(null);
+      ds.push({
+        label:           `${TYPE_META[type].label} ${yr}`,
+        data:            [...raw],
+        backgroundColor: TC[type][yr],
+        borderColor:     TC[type][yr],
+        borderWidth:     1,
+        borderRadius:    2,
+        yAxisID:         TYPE_META[type].yID,
+        hidden:          !VIS.types[type] || !VIS.years[yr],
+        _type: type,
+        _year: yr
+      });
+    });
+  });
+  return ds;
+}
+
+function buildTrendLegend() {
+  const html = Object.entries(TC).map(([type, yrs]) =>
+    Object.entries(yrs).map(([yr, col]) =>
+      `<div class="cl-item">
+        <div class="cl-sw" style="background:${col}"></div>
+        <span>${TYPE_META[type].label} ${yr}</span>
+      </div>`
+    ).join('')
+  ).join('');
+  document.getElementById('trendLegend').innerHTML = html;
+}
+
+function applyAxisMaxima(D) {
+  if(!trendChart) return;
+  const { kwhMax, kwhMin, mjMax, mjMin, klMax, klMin } = computeAxisMaxima(D);
+  trendChart.options.scales.y_kwh.max = kwhMax;
+  trendChart.options.scales.y_kwh.min = kwhMin;  // ← NEW
+  trendChart.options.scales.y_mj.max  = mjMax;
+  trendChart.options.scales.y_mj.min  = mjMin;   // ← NEW
+  trendChart.options.scales.y_kl.max  = klMax;
+  trendChart.options.scales.y_kl.min  = klMin;   // ← NEW
+  trendChart.update();                            // ← NEW: force redraw
+}
+
+function initTrendChart(D) {
+  if(trendChart){ trendChart.destroy(); trendChart = null; }
+  const { kwhMax, kwhMin, mjMax, mjMin, klMax, klMin } = computeAxisMaxima(D);
+  const ctx = document.getElementById('cTrend').getContext('2d');
+  trendChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: MONTHS, datasets: buildTrendDatasets(D) },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 350 },
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(44,78,76,0.93)',
+          titleFont:{ size:11 }, bodyFont:{ size:11 }, padding:10,
+          filter: item => !item.dataset.hidden && item.parsed.y != null && item.parsed.y !== 0,
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if(v == null) return null;
+              const y = ctx.dataset.yAxisID;
+              if(y==='y_mj')  return ` ${ctx.dataset.label}: ${fmtMj(v)} MJ`;
+              if(y==='y_kl')  return ` ${ctx.dataset.label}: ${fmtKl(v)} kL`;
+              return ` ${ctx.dataset.label}: ${fmtKwh(v)} kWh`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{color:'#e2e8e8'}, ticks:{font:{size:10},color:'#555'} },
+        y_mj: {
+          type:'linear', position:'left', min:mjMin, max:mjMax,
+          title:{display:true,text:'🔥 MJ',font:{size:11},color:'#C2400C'},
+          grid:{drawOnChartArea:false},
+          ticks:{font:{size:9},color:'#C2400C',callback:v=>fmtMj(v)}
+        },
+        y_kwh: {
+          type:'linear', position:'left', min:kwhMin, max:kwhMax,
+          title:{display:true,text:'⚡ kWh',font:{size:11},color:'#E5900A'},
+          grid:{color:'#e2e8e8',drawOnChartArea:true},
+          ticks:{font:{size:9},color:'#E5900A',callback:v=>fmtKwh(v)}
+        },
+        y_kl: {
+          type:'linear', position:'right', min:klMin, max:klMax,
+          title:{display:true,text:'💧 kL',font:{size:11},color:'#2F7AB0'},
+          grid:{drawOnChartArea:false},
+          ticks:{font:{size:9},color:'#2F7AB0',callback:v=>fmtKl(v)}
+        }
+      }
+    }
+  });
+}
+
+function updateTrendChart(D) {
+  if(!trendChart) { initTrendChart(D); return; }
+  trendChart.data.datasets.forEach(ds => {
+    const raw = D.monthly[ds._type][ds._year] || Array(12).fill(null);
+    ds.data   = [...raw];
+    ds.hidden = !VIS.types[ds._type] || !VIS.years[ds._year];
+  });
+  applyAxisMaxima(D);
+  trendChart.update();
+}
+
+// ── Toggle buttons ────────────────────────────────────────────────────────────
+function toggleYear(yr, btn) {
+  VIS.years[yr] = !VIS.years[yr];
+  btn.classList.toggle('active', VIS.years[yr]);
+  if(!currentKey) return;
+  const D = ASSET_DATA.assets[currentKey];
+  trendChart.data.datasets.forEach(ds => {
+    if(ds._year === yr) ds.hidden = !VIS.types[ds._type] || !VIS.years[yr];
+  });
+  applyAxisMaxima(D);
+  trendChart.update();
+}
+function toggleType(type, btn) {
+  VIS.types[type] = !VIS.types[type];
+  btn.classList.toggle('active', VIS.types[type]);
+  if(!currentKey) return;
+  const D = ASSET_DATA.assets[currentKey];
+  trendChart.data.datasets.forEach(ds => {
+    if(ds._type === type) ds.hidden = !VIS.types[type] || !VIS.years[ds._year];
+  });
+  applyAxisMaxima(D);
+  trendChart.update();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  SECTION 3 — NABERS MINI CHARTS
+// ════════════════════════════════════════════════════════════════════════════
+
+function buildNabMiniChart(cfg, ratings) {
+  // Destroy existing chart instance
+  if(NAB_CHARTS[cfg.canvasId]) {
+    NAB_CHARTS[cfg.canvasId].destroy();
+    NAB_CHARTS[cfg.canvasId] = null;
+  }
+
+  const body   = document.getElementById(cfg.bodyId);
+  
+  // Restore canvas if body was replaced with "no data" message
+  if(!document.getElementById(cfg.canvasId)) {
+    body.innerHTML = `<canvas id="${cfg.canvasId}"></canvas>`;
+  }
+
+  // Update average badge
+if (!ratings || !ratings.length) {
+  // Restore canvas if needed
+  if (!document.getElementById(cfg.canvasId)) {
+    document.getElementById(cfg.bodyId).innerHTML =
+      `<canvas id="${cfg.canvasId}"></canvas>`;
+  }
+  const ctx = document.getElementById(cfg.canvasId).getContext('2d');
+  NAB_CHARTS[cfg.canvasId] = new Chart(ctx, {
+    type: 'bar',
+    plugins: [nabLabelPlugin, nabEmptyPlugin],   // ← nabEmptyPlugin must be here
+    data: {
+      labels: [],
+      datasets: [{ label: cfg.label, data: [], _isEmpty: true }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 350 },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { grid: { color:'#e8f0f0' }, ticks: { font:{ size:9 }, color:'#999' } },
+        y: {
+          min: 0, max: 7.0,
+          grid: { color:'#e8f0f0' },
+          ticks: { stepSize:1, font:{ size:9 }, color:'#999',
+                   callback: v => v > 6.0 ? '' : v.toFixed(0)+'★' }
+        }
+      }
+    }
+  });
+    return;
+  }
+
+  // Take last 5 ratings
+  const data = ratings.slice(-5);
+
+  // X-axis: two-line labels [startMMM-YY, endMMM-YY]
+  const labels = data.map(r => fmtNabPeriod(r.start, r.end));
+
+  // Bar colours: shade by rating value
+  const barColors = data.map(r => ratingColor(r.rating) + 'CC');
+  const barBorders= data.map(r => ratingColor(r.rating));
+
+
+  const ctx = document.getElementById(cfg.canvasId).getContext('2d');
+  NAB_CHARTS[cfg.canvasId] = new Chart(ctx, {
+    type: 'bar',
+    plugins: [nabLabelPlugin, nabEmptyPlugin],
+    data: {
+      labels,
+      datasets: [
+        {
+          label:           cfg.label,
+          data:            data.map(r => r.rating),
+          backgroundColor: barColors,
+          borderColor:     barBorders,
+          borderWidth:     1.5,
+          borderRadius:    4,
+          _isRef:          false
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(44,78,76,0.93)',
+          titleFont:{ size:10 }, bodyFont:{ size:10 }, padding:8,
+          filter: item => !item.dataset._isRef,
+          callbacks: {
+            title: (items) => {
+              // Show full period in tooltip title
+              const r = data[items[0].dataIndex];
+              const P = fmtNabPeriod(r.start, r.end);
+              return `${P[0]} → ${P[1]}`;
+            },
+            label: ctx => ` ${cfg.label}: ${ctx.parsed.y.toFixed(1)}★`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color:'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { size:9 },
+            color: '#555',
+            maxRotation: 0,
+            minRotation: 0,
+            // Return array for two-line ticks
+            callback: function(val, index) {
+              return this.chart.data.labels[index]; // already an array
+            }
+          }
+        },
+        y: {
+          min: 0,
+          max: 7.0,   // buffer above 6.0 so data labels are not clipped
+          grid: { color:'rgba(0,0,0,0.06)' },
+          ticks: {
+            stepSize: 1.0,
+            font: { size:9 }, color:'#555',
+            callback: v => v > 6.0 ? '' : v.toFixed(0) + '★'
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateNabersCharts(D) {
+  NAB_CFG.forEach(cfg => buildNabMiniChart(cfg, D.nabers[cfg.key]));
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  if(!window.ASSET_DATA) {
+    document.body.innerHTML =
+      '<p style="padding:40px;text-align:center;color:#B71C1C">⚠️ <strong>data.js not found.</strong> Serve both files over HTTP from the same folder.</p>';
+    return;
+  }
+
+  buildDropdown();
+  buildTrendLegend();
+
+  // Sync button states to default VIS
+  document.getElementById('yr2024btn').classList.toggle('active', VIS.years[2024]);
+  document.getElementById('yr2025btn').classList.toggle('active', VIS.years[2025]);
+  document.getElementById('yr2026btn').classList.toggle('active', VIS.years[2026]);
+  document.getElementById('typeElecBtn') .classList.toggle('active', VIS.types.electricity);
+  document.getElementById('typeSolarBtn').classList.toggle('active', VIS.types.solar);
+  document.getElementById('typeGasBtn')  .classList.toggle('active', VIS.types.naturalGas);
+  document.getElementById('typeWaterBtn').classList.toggle('active', VIS.types.water);
+
+  // Load first asset
+  const firstKey = ASSET_DATA.assetList[0].key;
+  selectCDDItem(firstKey, ASSET_DATA.assetList[0].display);
+  loadAsset(firstKey);
+});
+</script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    

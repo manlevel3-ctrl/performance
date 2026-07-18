@@ -1,0 +1,852 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">GPT Building Performance</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;font-size:13px;background:#DEEBEB;color:#1a1a1a;line-height:1.5}
+:root{
+  --teal-l2:#DEEBEB;--teal-l1:#BCD8D7;--teal:#9BC4C2;
+  --teal-h:#5B9B98;--teal-d1:#447472;--teal-d2:#2E4E4C;--teal-d3:#005958;
+  --en:#F7B348;--en-d:#E5900A;--en-l:#FDF0DA;
+  --wa:#579FD2;--wa-d:#2F7AB0;--wa-l:#DDECF6;
+  --gr:#00B050;--rd:#FF3300;--yw:#F7B348;
+  --off:#6DA275;--ret:#E07040;--log:#0D6073;
+  --gl:#E5E6E6;--gm:#7F8081;--gd:#5F6061;
+}
+.hdr{background:var(--teal-d3);color:#fff;padding:13px 28px;display:flex;
+  justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.3)}
+.hdr-l h1{font-size:16px;font-weight:700;letter-spacing:.3px}
+.hdr-l .sub{font-size:11px;opacity:.8;margin-top:2px}
+.hdr-r{text-align:right;font-size:11px;opacity:.85;line-height:1.9}
+.hdr-nav-btn{
+  display:inline-flex;align-items:center;gap:3px;padding:5px 10px;
+  background:rgba(255,255,255,.15);color:#fff;
+  border:1.5px solid rgba(255,255,255,.5);border-radius:5px;
+  font-size:12px;font-weight:700;text-decoration:none;
+  transition:background .15s;white-space:nowrap;margin-top:6px;
+}
+.hdr-nav-btn:hover{background:rgba(255,255,255,.3)}
+.page{max-width:1440px;margin:0 auto;padding:20px 24px 48px}
+.sec{margin-bottom:24px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.09)}
+.sec-hd{background:var(--teal-h);color:#fff;padding:11px 18px;
+  display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.sec-hd.coll{cursor:pointer;user-select:none}
+.sec-hd.coll:hover{background:var(--teal-d1)}
+.sec-bd{background:#fff;padding:18px;border:1px solid var(--teal-l1);border-top:none}
+.sec-bd.hide{display:none}
+.caret{transition:transform .2s;font-size:14px;margin-left:4px}
+.sec-hd.closed .caret{transform:rotate(-90deg)}
+.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:960px){.port-grid{grid-template-columns:1fr}}
+.pcard{border-radius:6px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.11)}
+.pcard-hd{padding:11px 14px;color:#fff;font-weight:700;font-size:13px;
+  display:flex;align-items:center;gap:8px;letter-spacing:.3px}
+.pcard-hd.office{background:var(--off)}.pcard-hd.retail{background:var(--ret)}.pcard-hd.logistics{background:var(--log)}
+.krow{display:flex;align-items:stretch;border-bottom:1px solid var(--gl)}
+.krow:last-child{border-bottom:none}
+.kico{width:38px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.kico.en{background:var(--en-l)}.kico.wa{background:var(--wa-l)}.kico.ws{background:#E8F5E9}
+.kinf{flex:1;padding:9px 12px}
+.klbl{font-size:10px;color:var(--gm);text-transform:uppercase;letter-spacing:.5px}
+.kval{font-size:28px;font-weight:700;line-height:1.1;margin-top:1px}
+.kunit{font-size:12px;font-weight:400;color:#888}
+.ksub{font-size:11px;color:var(--gd);margin-top:1px}
+.kbadge{flex-shrink:0;align-self:center;margin:0 10px;padding:4px 8px;
+  border-radius:3px;font-size:18px;font-weight:700;white-space:nowrap}
+.bg-gr{background:#E8F5E9;color:#1B5E20}.bg-yw{background:#FFF3CD;color:#856404}.bg-rd{background:#FFEBEE;color:#B71C1C}
+.filter-bar{background:var(--teal-l2);border:1px solid var(--teal-l1);border-radius:6px;
+  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar-lbl{font-size:11px;font-weight:700;color:var(--teal-d2);white-space:nowrap;margin-right:2px}
+.filter-note{font-size:10px;color:var(--gm);margin-left:4px}
+.fbtn{padding:5px 15px;border:2px solid;border-radius:4px;font-size:12px;
+  font-weight:700;cursor:pointer;background:#fff;transition:all .2s ease;letter-spacing:.2px}
+.fbtn.off{border-color:var(--off);color:var(--off)}.fbtn.ret{border-color:var(--ret);color:var(--ret)}.fbtn.log{border-color:var(--log);color:var(--log)}
+.fbtn.active.off{background:var(--off);color:#fff}.fbtn.active.ret{background:var(--ret);color:#fff}.fbtn.active.log{background:var(--log);color:#fff}
+.chart-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:1100px){.chart-grid{grid-template-columns:1fr}}
+.ccard{background:#fff;border-radius:6px;padding:14px;border:1px solid var(--teal-l1);box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.clbl{font-size:12px;font-weight:700;color:var(--teal-d2);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.cwrap{position:relative;height:240px;width:100%}
+.cwrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.leg{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.lpill{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gd)}
+.lswatch{width:20px;height:3px;border-radius:2px;flex-shrink:0}
+.lswatch.dashed{background:none;border-top:2px dashed;height:0;margin-top:1px}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:800px){.pgrid{grid-template-columns:1fr}}
+.psh{font-size:12px;font-weight:700;padding:7px 12px;border-radius:4px 4px 0 0;margin-bottom:0}
+.sh-en{background:var(--en-l);color:var(--en-d)}.sh-wa{background:var(--wa-l);color:var(--wa-d)}.sh-ws{background:#E8F5E9;color:#1B5E20}
+.sub-h2{font-size:11px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;color:var(--gd);font-weight:700}
+.best-c{color:var(--gr)}.worst-c{color:var(--rd)}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{background:var(--teal-l2);padding:5px 8px;text-align:left;font-size:10.5px;font-weight:700;color:var(--teal-d2);border-bottom:2px solid var(--teal-l1)}
+tbody td{padding:5px 8px;border-bottom:1px solid var(--gl);vertical-align:middle}
+tbody tr:hover{background:#F6FAFA}
+tbody tr:last-child td{border-bottom:none}
+.bdg{display:inline-block;padding:2px 6px;border-radius:2px;font-size:10.5px;font-weight:700}
+.b-gr{background:var(--gr);color:#fff}.b-yw{background:#F7B348;color:#333}.b-rd{background:var(--rd);color:#fff}
+.mhd{background:var(--teal-l1);color:var(--teal-d2);padding:8px 12px;font-weight:700;font-size:12px;border-radius:4px;margin:12px 0 6px;display:flex;align-items:center;gap:6px}
+.mtw{max-height:320px;overflow-y:auto;border:1px solid var(--teal-l1);border-radius:4px;margin-bottom:8px}
+.mtw thead th{position:sticky;top:0;z-index:1}.mtw table{font-size:11px}
+.note{background:#FFF8E1;border-left:3px solid var(--yw);padding:8px 12px;font-size:11.5px;border-radius:0 4px 4px 0;margin:8px 0}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb20{margin-bottom:20px}
+.sub-lbl{font-size:11px;font-weight:700;color:var(--teal-d1);margin:4px 0}
+/* ── Weather ── */
+.metric-toggle{position:relative;display:inline-flex;background:var(--teal-l1);border-radius:24px;padding:3px;user-select:none}
+.mt-bg{position:absolute;top:3px;height:calc(100% - 6px);border-radius:21px;background:var(--teal-d3);pointer-events:none;z-index:0;transition:left .28s cubic-bezier(.4,0,.2,1),width .28s cubic-bezier(.4,0,.2,1)}
+.mt-opt{position:relative;z-index:1;padding:6px 18px;border:none;background:transparent;border-radius:21px;font-size:12px;font-weight:700;cursor:pointer;color:var(--teal-d2);transition:color .28s;white-space:nowrap;letter-spacing:.2px}
+.mt-opt.active{color:#fff}
+.w-ctrl-row{background:var(--teal-l2);border:1px solid var(--teal-l1);border-radius:6px;padding:9px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.w-ctrl-grp{display:flex;align-items:center;gap:6px}
+.w-ctrl-lbl{font-size:11px;font-weight:700;color:var(--teal-d2);white-space:nowrap;margin-right:2px}
+.w-rgrp{display:flex;align-items:center;gap:4px}
+.w-rlbl{font-size:10px;font-weight:700;padding:3px 7px;border-radius:3px;color:#fff;white-space:nowrap}
+.w-rlbl.nsw{background:#2F7AB0}.w-rlbl.vic{background:#447472}.w-rlbl.qld{background:#E5900A}.w-rlbl.wa-s{background:#9855C5}
+.w-rsep{color:var(--teal-l1);font-size:20px;padding:0 4px;line-height:1}
+.wbtn{padding:4px 10px;border:2px solid var(--wc,#888);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:var(--wc,#888);transition:all .15s;white-space:nowrap}
+.wbtn.active{background:var(--wc,#888);color:#fff}.wbtn:hover{opacity:.82}
+.w-legend{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;padding:8px 12px;background:var(--teal-l2);border:1px solid var(--teal-l1);border-radius:5px;margin-bottom:6px}
+.w-leg-col{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.w-leg-t{font-size:10px;font-weight:700;color:var(--teal-d2);white-space:nowrap}
+.w-leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--gd)}
+.w-lg-sw{display:inline-block;width:18px;height:3px;border-radius:2px;flex-shrink:0}
+.w-lg-line{display:inline-block;width:24px;height:0;border-top-style:solid;border-top-color:#555;flex-shrink:0}
+.w-lg-line.solid{border-top-width:2.5px}.w-lg-line.ldash{border-top-width:2px;border-top-style:dashed}.w-lg-line.sdash{border-top-width:2px;border-top-style:dotted}
+.w-chart-wrap{position:relative;height:544px;width:100%;margin-top:6px}
+.w-chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.ftr{background:var(--teal-d2);color:#fff;padding:13px 28px;text-align:center;font-size:11px;opacity:.92;margin-top:24px}
+/* Performer tables — fixed layout for consistent column widths */
+.perf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  table-layout: fixed;
+  word-break: break-word;
+}
+.perf-table thead th {
+  background: var(--teal-l2);
+  padding: 5px 8px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--teal-d2);
+  border-bottom: 2px solid var(--teal-l1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.perf-table tbody td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--gl);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.perf-table tbody tr:hover { background: #F6FAFA; }
+.perf-table tbody tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<header class="hdr" id="site-header"></header>
+<div class="page" id="main-content"><p style="padding:40px;text-align:center;color:var(--teal-d2)">⏳ Loading dashboard data…</p></div>
+<footer class="ftr" id="site-footer"></footer>
+
+<script src="data.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+'use strict';
+// ════════════════════════════════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════════════════════════════════
+const CH = {}, CH_META = {};
+const VIS = { office:true, retail:true, logistics:true };
+const PERF_IDS = ['cE','cW','cWs'];
+const DQ_IDS   = ['cDQE','cDQW','cDQWs'];
+const PERF_IDX = { office:[0,1], retail:[2,3], logistics:[4,5] };
+const DQ_IDX   = { office:[0],   retail:[1],   logistics:[2]   };
+
+let wMetric  = 'temp';
+let wYears   = new Set([2025,2026]);
+let wSensors = new Set(['sydney_cbd']);
+let wChart   = null;
+
+// ════════════════════════════════════════════════════════════════════════════
+//  FORMATTING & TRAFFIC LIGHT HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+const esc = s => String(s||'')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function fmtN(n) {
+  if (n == null) return '—';
+  if (n >= 1000) return n.toLocaleString('en-AU',{minimumFractionDigits:1,maximumFractionDigits:1});
+  return parseFloat(n).toFixed(1);
+}
+
+function sgn(n) { return n < 0 ? '−' : '+'; }
+function pctDiff(a,t) { return (a-t)/t*100; }
+
+// ── Portfolio card badge ──────────────────────────────────────────────────
+// Energy / Water — lower is better (threshold ±1.5%)
+function cardBadgeEW(a,t) {
+  const d=pctDiff(a,t), s=sgn(d), v=Math.abs(d).toFixed(1);
+  if (d<0)    return `<div class="kbadge bg-gr">${s}${v}% 🟢</div>`;
+  if (d<=1.5) return `<div class="kbadge bg-yw">+${v}% 🟡</div>`;
+  return             `<div class="kbadge bg-rd">+${v}% 🔴</div>`;
+}
+// Waste — higher is better (threshold ±1.5pp)
+function cardBadgeWaste(a,t) {
+  const pp=a-t, s=sgn(pp), v=Math.abs(pp).toFixed(1);
+  if (pp>0)    return `<div class="kbadge bg-gr">+${v}pp 🟢</div>`;
+  if (pp>=-1.5) return `<div class="kbadge bg-yw">${s}${v}pp 🟡</div>`;
+  return              `<div class="kbadge bg-rd">${s}${v}pp 🔴</div>`;
+}
+
+// ── Performer row badge ───────────────────────────────────────────────────
+// Energy / Water — lower is better (threshold <0 green | 0–5% yellow | >5% red)
+function bdgEW(a,t) {
+  const d=pctDiff(a,t), s=sgn(d), v=Math.abs(d).toFixed(1);
+  const c=d<0?'b-gr':d<=5?'b-yw':'b-rd';
+  return `<span class="bdg ${c}">${s}${v}%</span>`;
+}
+// Waste — higher is better (>0 green | -3–0 yellow | <-3 red)
+function bdgWaste(a,t) {
+  const pp=a-t, s=sgn(pp), v=Math.abs(pp).toFixed(1);
+  const c=pp>0?'b-gr':pp>=-3?'b-yw':'b-rd';
+  return `<span class="bdg ${c}">${s}${v}pp</span>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  HTML RENDERERS
+// ════════════════════════════════════════════════════════════════════════════
+
+function renderHeader(D) {
+  document.getElementById('page-title').textContent = `GPT Building Performance — ${D.report.period}`;
+  document.getElementById('site-header').innerHTML = `
+    <div class="hdr-l">
+      <h1>🏢 GPT Group · Monthly Building Performance Report — ${esc(D.report.period)}</h1>
+      <div class="sub">Building Performance Team &nbsp;·&nbsp; MAT: ${esc(D.report.matLabel)} &nbsp;·&nbsp; Data Source: Envizi Platform</div>
+    </div>
+    <div class="hdr-r">
+      <div>Reporting Period: <strong>${esc(D.report.period)}</strong></div>
+      <div>MAT End: ${esc(D.report.matEnd)}</div>
+      <div>Generated: ${esc(D.report.generated)}</div>
+      <a href="02.asset.html" class="hdr-nav-btn">🏢 Asset Performance →</a>
+      <a href="03.reimagined.html" class="hdr-nav-btn">🔬 Reimagined KPIs</a>
+    </div>`;
+  document.getElementById('site-footer').innerHTML =
+    `🏢 GPT Group · Building Performance Team · Monthly Report — ${esc(D.report.period)} · Data Source: Envizi Platform · MAT: ${esc(D.report.matLabel)} · Generated: ${esc(D.report.generated)}`;
+}
+
+function renderPortfolioSummary(D) {
+  const S=D.portfolioSummary;
+  const CFG=[
+    {key:'office',    emoji:'🏢', label:'Office Portfolio'},
+    {key:'retail',    emoji:'🛍️',label:'Retail Portfolio'},
+    {key:'logistics', emoji:'🏭',label:'Logistics Portfolio'}
+  ];
+  const cards=CFG.map(p=>{
+    const en=S[p.key].energy, wa=S[p.key].water, ws=S[p.key].waste;
+    return `
+      <div class="pcard">
+        <div class="pcard-hd ${p.key}">${p.emoji} ${p.label}</div>
+        <div class="krow"><div class="kico en">⚡</div><div class="kinf"><div class="klbl">Energy Intensity</div><div class="kval">${fmtN(en.actual)} <span class="kunit">${esc(en.unit)}</span></div><div class="ksub">Target: ${fmtN(en.target)} ${esc(en.unit)}</div></div>${cardBadgeEW(en.actual,en.target)}</div>
+        <div class="krow"><div class="kico wa">💧</div><div class="kinf"><div class="klbl">Water Intensity</div><div class="kval">${fmtN(wa.actual)} <span class="kunit">${esc(wa.unit)}</span></div><div class="ksub">Target: ${fmtN(wa.target)} ${esc(wa.unit)}</div></div>${cardBadgeEW(wa.actual,wa.target)}</div>
+        <div class="krow"><div class="kico ws">♻️</div><div class="kinf"><div class="klbl">A-Grade Waste</div><div class="kval">${ws.actual}<span class="kunit">%</span></div><div class="ksub">Target: ${ws.target}%</div></div>${cardBadgeWaste(ws.actual,ws.target)}</div>
+      </div>`;
+  }).join('');
+  return `
+    <section class="sec">
+      <div class="sec-hd">📊 Portfolio Performance Summary — MAT to ${esc(D.report.period)}</div>
+      <div class="sec-bd">
+        <div class="port-grid">${cards}</div>
+        <div class="note" style="margin-top:14px">
+          ℹ️ <strong>Traffic Light Guide:</strong> &nbsp;
+          🟢 On / beating target &nbsp;|&nbsp; 🟡 Within 1.5% &nbsp;|&nbsp;
+          🔴 Beyond 1.5% &nbsp;|&nbsp; Waste expressed as delta pp vs target.
+        </div>
+      </div>
+    </section>`;
+}
+
+function renderPerfTrends(D) {
+  return `
+    <section class="sec">
+      <div class="sec-hd">📈 Performance Trends — ${esc(D.report.matChartLabel)}</div>
+      <div class="sec-bd">
+        <div class="filter-bar">
+          <span class="filter-bar-lbl">🔎 Filter Portfolios:</span>
+          <button id="btn-office"    class="fbtn off active" onclick="togglePortfolio('office',this)">🏢 Office</button>
+          <button id="btn-retail"    class="fbtn ret active" onclick="togglePortfolio('retail',this)">🛍️ Retail</button>
+          <button id="btn-logistics" class="fbtn log active" onclick="togglePortfolio('logistics',this)">🏭 Logistics</button>
+          <span class="filter-note">— applies to all performance trend &amp; data quality charts below</span>
+        </div>
+        <div class="note mb12">Solid lines = Actual &nbsp;·&nbsp; Dashed lines = Target</div>
+        <div class="leg">
+          <div class="lpill"><div class="lswatch" style="background:#6DA275"></div> Office Actual</div>
+          <div class="lpill"><div class="lswatch dashed" style="border-color:#6DA275"></div> Office Target</div>
+          <div class="lpill"><div class="lswatch" style="background:#E07040"></div> Retail Actual</div>
+          <div class="lpill"><div class="lswatch dashed" style="border-color:#E07040"></div> Retail Target</div>
+          <div class="lpill"><div class="lswatch" style="background:#0D6073"></div> Logistics Actual</div>
+          <div class="lpill"><div class="lswatch dashed" style="border-color:#0D6073"></div> Logistics Target</div>
+        </div>
+        <div class="chart-grid">
+          <div class="ccard"><div class="clbl">⚡ Energy Intensity [MJ/sqm]</div><div class="cwrap"><canvas id="cE"></canvas></div></div>
+          <div class="ccard"><div class="clbl">💧 Water Intensity [L/sqm]</div><div class="cwrap"><canvas id="cW"></canvas></div></div>
+          <div class="ccard"><div class="clbl">♻️ A-Grade Waste [%]</div><div class="cwrap"><canvas id="cWs"></canvas></div></div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function renderDataQuality(D) {
+  return `
+    <section class="sec">
+      <div class="sec-hd">🔍 Data Integrity — ${esc(D.report.matChartLabel)}</div>
+      <div class="sec-bd">
+        <div class="note mb12">
+          Portfolio filter buttons in <strong>Performance Trends</strong> above also control these charts. &nbsp;
+          🟢 ≥98% &nbsp;|&nbsp; 🟡 95–97.9% &nbsp;|&nbsp; 🔴 &lt;95% &nbsp;·&nbsp;
+          <span style="color:#E5900A">— — 98% threshold</span> &nbsp;
+          <span style="color:#FF3300">— — 95% critical</span>
+        </div>
+        <div class="leg">
+          <div class="lpill"><div class="lswatch" style="background:#6DA275"></div> Office</div>
+          <div class="lpill"><div class="lswatch" style="background:#E07040"></div> Retail</div>
+          <div class="lpill"><div class="lswatch" style="background:#0D6073"></div> Logistics</div>
+          <div class="lpill"><div class="lswatch dashed" style="border-color:#E5900A"></div> 98% Threshold</div>
+          <div class="lpill"><div class="lswatch dashed" style="border-color:#FF3300"></div> 95% Critical</div>
+        </div>
+        <div class="chart-grid">
+          <div class="ccard"><div class="clbl">⚡ Energy Data Quality [%]</div><div class="cwrap"><canvas id="cDQE"></canvas></div></div>
+          <div class="ccard"><div class="clbl">💧 Water Data Quality [%]</div><div class="cwrap"><canvas id="cDQW"></canvas></div></div>
+          <div class="ccard"><div class="clbl">♻️ Waste Data Quality [%]</div><div class="cwrap"><canvas id="cDQWs"></canvas></div></div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function renderWeather() {
+  return `
+    <section class="sec">
+      <div class="sec-hd coll" onclick="togSec(this)">
+        🌡️ Monthly Weather Data — Temperature (°C) &amp; Humidity (%) <span class="caret">▼</span>
+      </div>
+      <div class="sec-bd">
+        <div class="w-ctrl-row">
+          <div class="w-ctrl-grp">
+            <span class="w-ctrl-lbl">Metric:</span>
+            <div class="metric-toggle" id="metric-toggle">
+              <div class="mt-bg" id="mt-bg"></div>
+              <button class="mt-opt active" onclick="setWMetric('temp',this)">🌡️ Temperature</button>
+              <button class="mt-opt"        onclick="setWMetric('hum',this)">💧 Humidity</button>
+            </div>
+          </div>
+          <div class="w-ctrl-grp" style="margin-left:12px">
+            <span class="w-ctrl-lbl">Year:</span>
+            <button class="wbtn wy-btn"        style="--wc:#9BC4C2" onclick="togWYear(2024,this)">2024</button>
+            <button class="wbtn wy-btn active" style="--wc:#5B9B98" onclick="togWYear(2025,this)">2025</button>
+            <button class="wbtn wy-btn active" style="--wc:#005958" onclick="togWYear(2026,this)">2026</button>
+          </div>
+        </div>
+        <div class="w-ctrl-row">
+          <span class="w-ctrl-lbl">Regions &amp; Sensors:</span>
+          <div class="w-rgrp">
+            <span class="w-rlbl nsw">NSW</span>
+            <button class="wbtn ws-btn active" style="--wc:#2F7AB0" onclick="togWSensor('sydney_cbd',this)">Sydney CBD</button>
+            <button class="wbtn ws-btn"        style="--wc:#579FD2" onclick="togWSensor('rhtc',this)">RHTC</button>
+            <button class="wbtn ws-btn"        style="--wc:#579FD2" onclick="togWSensor('charlestown',this)">CSQ</button>
+            <button class="wbtn ws-btn"        style="--wc:#579FD2" onclick="togWSensor('dapto',this)">Dapto</button>
+            <button class="wbtn ws-btn"        style="--wc:#579FD2" onclick="togWSensor('marrickville',this)">MMetro</button>
+          </div>
+          <div class="w-rsep">|</div>
+          <div class="w-rgrp">
+            <span class="w-rlbl vic">VIC</span>
+            <button class="wbtn ws-btn" style="--wc:#447472" onclick="togWSensor('melb_cbd',this)">Melbourne CBD</button>
+            <button class="wbtn ws-btn" style="--wc:#6DA275" onclick="togWSensor('chirnside',this)">Chirnside</button>
+            <button class="wbtn ws-btn" style="--wc:#6DA275" onclick="togWSensor('highpoint',this)">Hightpoint</button>
+            <button class="wbtn ws-btn" style="--wc:#6DA275" onclick="togWSensor('parkmore',this)">Parkmore</button>
+          </div>
+          <div class="w-rsep">|</div>
+          <div class="w-rgrp">
+            <span class="w-rlbl qld">QLD</span>
+            <button class="wbtn ws-btn" style="--wc:#E5900A" onclick="togWSensor('bris_cbd',this)">Brisbane CBD</button>
+            <button class="wbtn ws-btn" style="--wc:#F7B348" onclick="togWSensor('gold_coast',this)">Gold Coast</button>
+          </div>
+          <div class="w-rsep">|</div>
+          <div class="w-rgrp">
+            <span class="w-rlbl wa-s">WA</span>
+            <button class="wbtn ws-btn" style="--wc:#9855C5" onclick="togWSensor('perth',this)">Perth</button>
+          </div>
+        </div>
+        <div class="w-legend">
+          <div class="w-leg-col">
+            <span class="w-leg-t">Sensors:</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#2F7AB0"></span> Sydney CBD (NSW)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#579FD2"></span> RHTC (NSW)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#579FD2"></span> CSQ (NSW)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#579FD2"></span> Dapto (NSW)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#579FD2"></span> MMetro (NSW)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#447472"></span> Melbourne CBD (VIC)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#6DA275"></span> Chirnside (VIC)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#6DA275"></span> Highpoint (VIC)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#6DA275"></span> Parkmore (VIC)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#E5900A"></span> Brisbane CBD (QLD)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#F7B348"></span> Gold Coast (QLD)</span>
+            <span class="w-leg-item"><span class="w-lg-sw" style="background:#9855C5"></span> Perth (WA)</span>
+          </div>
+          <div class="w-leg-col" style="margin-left:12px">
+            <span class="w-leg-t">Year style:</span>
+            <span class="w-leg-item"><span class="w-lg-line solid"></span> 2026 — solid</span>
+            <span class="w-leg-item"><span class="w-lg-line ldash"></span> 2025 — long dash</span>
+            <span class="w-leg-item"><span class="w-lg-line sdash"></span> 2024 — dotted</span>
+          </div>
+        </div>
+        <div class="w-chart-wrap"><canvas id="cWeather"></canvas></div>
+        <div class="note" style="margin-top:8px;font-size:10.5px">
+          📍 Regions: Sydney (Sydney CBD, RHTC, CSQ, Dapto and MMetro) &nbsp;·&nbsp; Melbourne (Melbourne CBD, Chirnside, Highpoint and Parkmore) &nbsp;·&nbsp; Brisbane (Brisbane CBD and Gold Coast) &nbsp;·&nbsp; Perth (Karrinyup) &nbsp;·&nbsp;
+
+          <strong>Data available to end of MAT.</strong>
+        </div>
+      </div>
+    </section>`;
+}
+
+// ── Performer table helpers ───────────────────────────────────────────────
+function ewRow(r) {
+  return `<tr><td>${esc(r.asset)}</td><td>${fmtN(r.actual)}</td><td>${fmtN(r.target)}</td><td>${bdgEW(r.actual,r.target)}</td><td>${r.dq}%</td><td>${r.trend}</td></tr>`;
+}
+function wasteRow(r) {
+  return `<tr><td>${esc(r.asset)}</td><td>${r.actual}%</td><td>${r.target}%</td><td>${bdgWaste(r.actual,r.target)}</td><td>${r.dq}%</td><td>${r.trend}</td></tr>`;
+}
+// Shared colgroup for all 6-column performer tables
+// Asset=40% | Actual=12% | Target=12% | Diff=18% | DQ%=12% | Trend=6%
+const PERF_COLGROUP = `<colgroup>
+  <col style="width:40%">
+  <col style="width:12%">
+  <col style="width:12%">
+  <col style="width:18%">
+  <col style="width:12%">
+  <col style="width:6%">
+</colgroup>`;
+
+function ewTable(rows) {
+  return `<table class="perf-table">${PERF_COLGROUP}
+    <thead><tr>
+      <th>Asset</th><th>Actual</th><th>Target</th>
+      <th>Diff</th><th>DQ%</th><th>Trend</th>
+    </tr></thead>
+    <tbody>${rows.map(ewRow).join('')}</tbody>
+  </table>`;
+}
+function wasteTable(rows) {
+  return `<table class="perf-table">${PERF_COLGROUP}
+    <thead><tr>
+      <th>Asset</th><th>Actual</th><th>Target</th>
+      <th>Δ vs Target</th><th>DQ%</th><th>Trend</th>
+    </tr></thead>
+    <tbody>${rows.map(wasteRow).join('')}</tbody>
+  </table>`;
+}
+
+function renderOfficeRetailPerformers(portKey, title, D) {
+  const P=D.performers[portKey];
+  return `
+    <section class="sec">
+      <div class="sec-hd coll closed" onclick="togSec(this)">${title} <span class="caret">▼</span></div>
+      <div class="sec-bd hide">
+        <div class="mb20">
+          <div class="psh sh-en mb8">⚡ Energy Intensity [MJ/sqm] — Lower is Better</div>
+          <div class="pgrid">
+            <div><div class="sub-h2 best-c">🏆 Best Performing</div>${ewTable(P.energy.best)}</div>
+            <div><div class="sub-h2 worst-c">⚠️ Worst Performing</div>${ewTable(P.energy.worst)}</div>
+          </div>
+        </div>
+        <div class="mb20">
+          <div class="psh sh-wa mb8">💧 Water Intensity [L/sqm] — Lower is Better</div>
+          <div class="pgrid">
+            <div><div class="sub-h2 best-c">🏆 Best Performing</div>${ewTable(P.water.best)}</div>
+            <div><div class="sub-h2 worst-c">⚠️ Worst Performing</div>${ewTable(P.water.worst)}</div>
+          </div>
+        </div>
+        <div>
+          <div class="psh sh-ws mb8">♻️ A-Grade Waste [%] — Higher is Better</div>
+          <div class="pgrid">
+            <div><div class="sub-h2 best-c">🏆 Best Performing</div>${wasteTable(P.waste.best)}</div>
+            <div><div class="sub-h2 worst-c">⚠️ Worst Performing</div>${wasteTable(P.waste.worst)}</div>
+          </div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function renderLogisticsPerformers(title, D) {
+  const P=D.performers.logistics;
+  // Flat list: index 0 = better, index 1 = worse — add emoji prefix
+  function logEwRow(r,i) {
+    const pfx=i===0?'🏆 ':'⚠️ ';
+    return `<tr><td>${pfx}${esc(r.asset)}</td><td>${fmtN(r.actual)}</td><td>${fmtN(r.target)}</td><td>${bdgEW(r.actual,r.target)}</td><td>${r.dq}%</td><td>${r.trend}</td></tr>`;
+  }
+  function logWasteRow(r,i) {
+    const pfx=i===0?'🏆 ':'⚠️ ';
+    return `<tr><td>${pfx}${esc(r.asset)}</td><td>${r.actual}%</td><td>${r.target}%</td><td>${bdgWaste(r.actual,r.target)}</td><td>${r.dq}%</td><td>${r.trend}</td></tr>`;
+  }
+const ewHdr=`<table class="perf-table">${PERF_COLGROUP}<thead><tr><th>Asset</th><th>Actual</th><th>Target</th><th>Diff</th><th>DQ%</th><th>Trend</th></tr></thead><tbody>`;
+const wsHdr=`<table class="perf-table">${PERF_COLGROUP}<thead><tr><th>Asset</th><th>Actual</th><th>Target</th><th>Δ vs Target</th><th>DQ%</th><th>Trend</th></tr></thead><tbody>`;
+const enTbl=ewHdr+P.energy.map(logEwRow).join('')+'</tbody></table>';
+const waTbl=ewHdr+P.water.map(logEwRow).join('')+'</tbody></table>';
+const wsTbl=wsHdr+P.waste.map(logWasteRow).join('')+'</tbody></table>';
+  return `
+    <section class="sec">
+      <div class="sec-hd coll closed" onclick="togSec(this)">${title} <span class="caret">▼</span></div>
+      <div class="sec-bd hide">
+        <div class="note mb12">ℹ️ The Logistics portfolio comprises two assets: Quad 1 and Quad 4.</div>
+        <div class="pgrid mb20">
+          <div><div class="psh sh-en mb8">⚡ Energy [MJ/sqm]</div>${enTbl}</div>
+          <div><div class="psh sh-wa mb8">💧 Water [L/sqm]</div>${waTbl}</div>
+        </div>
+        <div style="max-width:670px"><div class="psh sh-ws mb8">♻️ A-Grade Waste [%]</div>${wsTbl}</div>
+      </div>
+    </section>`;
+}
+
+// ── Missing data tables ───────────────────────────────────────────────────
+function missTbl(rows, colDefs) {
+  // Column width presets by number of columns
+  const W = {
+    4: ['10%','15%','65%','10%'],
+  };
+  const widths = W[colDefs.length] || colDefs.map(()=>`${(100/colDefs.length).toFixed(0)}%`);
+  const colgroup = `<colgroup>${widths.map(w=>`<col style="width:${w}">`).join('')}</colgroup>`;
+  const hdr = colDefs.map(c=>`<th>${esc(c.label)}</th>`).join('');
+  const rws = rows.map(r=>`<tr>${colDefs.map(c=>`<td>${esc(String(r[c.key]||''))}</td>`).join('')}</tr>`).join('');
+  return `<table>${colgroup}<thead><tr>${hdr}</tr></thead><tbody>${rws}</tbody></table>`;
+}
+const STD4=[
+  {key:'portfolio',label:'Portfolio'},
+  {key:'asset',    label:'Asset'},
+  {key:'account',  label:'Account Name'},
+  {key:'days',     label:'Days Missing'}
+];
+const REFCOLS=[
+  {key:'portfolio',label:'Portfolio'},
+  {key:'asset',    label:'Asset'},
+  {key:'account', label:'Account Name'},
+  {key:'days',     label:'Days Missing'}
+];
+
+function renderMissingData(D) {
+  const MD=D.missingData;
+  return `
+    <section class="sec">
+      <div class="sec-hd coll closed" onclick="togSec(this)">⚠️ Missing Data — Manual Ops Accounts <span class="caret">▼</span></div>
+      <div class="sec-bd hide">
+        <div class="note mb12">
+          Accounts with missing data as at ${esc(D.report.period)}.
+          Grouped: Electricity → Natural Gas → Water → Diesel → Refrigerants.
+        </div>
+        <div class="mhd">⚡ Electricity [kWh] — Grid &amp; Solar</div>
+        <div class="sub-lbl mb8">Grid Electricity</div>
+        <div class="mtw mb8">${missTbl(MD.electricity.grid,STD4)}</div>
+        <div class="sub-lbl mb8">Solar Generation</div>
+        <div class="mtw mb12">${missTbl(MD.electricity.solar,STD4)}</div>
+        <div class="mhd">🔥 Natural Gas [MJ]</div>
+        <div class="mtw mb12">${missTbl(MD.naturalGas,STD4)}</div>
+        <div class="mhd">💧 Water [kL]</div>
+        <div class="mtw mb12">${missTbl(MD.water,STD4)}</div>
+        <div class="mhd">⛽ Diesel Stationary [L]</div>
+        <div class="mtw mb12">${missTbl(MD.diesel,STD4)}</div>
+        <div class="mhd">❄️ Refrigerants [kg]</div>
+        <div class="mtw mb12">${missTbl(MD.refrigerants,REFCOLS)}</div>
+      </div>
+    </section>`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  CHART HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+function niceStep(r){if(r<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(r/5)));const v=(r/5)/p;return(v<1.5?1:v<3?2:v<7?5:10)*p;}
+function niceMinMax(mn,mx){const r=Math.max(mx-mn,1),pad=r*0.12,s=niceStep(r+pad*2);return{min:Math.floor((mn-pad)/s)*s,max:Math.ceil((mx+pad)/s)*s};}
+
+function reScaleY(chart,id){
+  const vals=[];
+  chart.data.datasets.forEach(d=>{if(!d.hidden&&!d.isRef)vals.push(...d.data.filter(v=>v!=null));});
+  if(!vals.length)return;
+  const meta=CH_META[id]||{};
+  if(meta.fixedMax!==undefined){
+    const mn=Math.min(...vals),r=Math.max(meta.fixedMax-mn,1),s=niceStep(r),pad=r*0.06;
+    chart.options.scales.y.min=Math.floor((mn-pad)/s)*s;
+    chart.options.scales.y.max=meta.fixedMax;
+  } else {
+    const{min,max}=niceMinMax(Math.min(...vals),Math.max(...vals));
+    chart.options.scales.y.min=min;chart.options.scales.y.max=max;
+  }
+}
+
+function mkDs(label,data,color,dashed,isRef){
+  return{label,data,isRef:!!isRef,borderColor:color,backgroundColor:'transparent',
+    borderWidth:isRef?1.5:(dashed?1.8:2.5),borderDash:(dashed||isRef)?[6,3]:[],
+    pointRadius:isRef?0:(dashed?0:4),pointHoverRadius:isRef?0:7,
+    pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,fill:false,tension:0.4};
+}
+function ref12(n){return Array(12).fill(n);}
+
+function buildChart(id,datasets,labels,yLbl,tickCb,fixedMax){
+  CH_META[id]={fixedMax};
+  const allVals=[];datasets.forEach(d=>{if(!d.isRef)allVals.push(...d.data.filter(v=>v!=null))});
+  let initMin,initMax;
+  if(fixedMax!==undefined){
+    const mn=Math.min(...allVals),r=Math.max(fixedMax-mn,1),s=niceStep(r),pad=r*0.06;
+    initMin=Math.floor((mn-pad)/s)*s;initMax=fixedMax;
+  } else {
+    const s=niceMinMax(Math.min(...allVals),Math.max(...allVals));initMin=s.min;initMax=s.max;
+  }
+  const axisCb=(fixedMax!==undefined)?(v=>v>100?null:(tickCb?tickCb(v):v)):(tickCb||(v=>v));
+  const ctx=document.getElementById(id).getContext('2d');
+  const c=new Chart(ctx,{type:'line',data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,resizeDelay:60,
+      animation:{duration:550,easing:'easeInOutCubic'},
+      transitions:{active:{animation:{duration:300}}},
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},
+        tooltip:{backgroundColor:'rgba(44,78,76,0.93)',titleFont:{size:11},bodyFont:{size:11},padding:10,
+          callbacks:{label:ctx=>{const v=ctx.parsed.y;return v==null?null:` ${ctx.dataset.label}: ${tickCb?tickCb(v):String(v)}`;}}}},
+      scales:{
+        x:{grid:{color:'#e2e8e8'},ticks:{font:{size:10},color:'#555'}},
+        y:{min:initMin,max:initMax,grid:{color:'#e2e8e8'},
+           title:{display:true,text:yLbl,font:{size:11},color:'#2E4E4C'},
+           ticks:{font:{size:10},color:'#555',callback:axisCb}}}}});
+  CH[id]=c;return c;
+}
+
+// ── Performance charts ────────────────────────────────────────────────────
+const CO='#6DA275',CR='#E07040',CL='#0D6073',CR98='#E5900A',CR95='#FF3300';
+
+function initPerfCharts(D){
+  const PT=D.performanceTrends, mo=PT.months;
+  const pct=v=>v.toFixed(1)+'%';
+  buildChart('cE',[mkDs('Office',PT.energy.officeActual,CO),mkDs('Office Target',PT.energy.officeTarget,CO,true),mkDs('Retail',PT.energy.retailActual,CR),mkDs('Retail Target',PT.energy.retailTarget,CR,true),mkDs('Logistics',PT.energy.logisticsActual,CL),mkDs('Logistics Target',PT.energy.logisticsTarget,CL,true)],mo,'MJ/sqm');
+  buildChart('cW',[mkDs('Office',PT.water.officeActual,CO),mkDs('Office Target',PT.water.officeTarget,CO,true),mkDs('Retail',PT.water.retailActual,CR),mkDs('Retail Target',PT.water.retailTarget,CR,true),mkDs('Logistics',PT.water.logisticsActual,CL),mkDs('Logistics Target',PT.water.logisticsTarget,CL,true)],mo,'L/sqm');
+  buildChart('cWs',[mkDs('Office',PT.waste.officeActual,CO),mkDs('Office Target',PT.waste.officeTarget,CO,true),mkDs('Retail',PT.waste.retailActual,CR),mkDs('Retail Target',PT.waste.retailTarget,CR,true),mkDs('Logistics',PT.waste.logisticsActual,CL),mkDs('Logistics Target',PT.waste.logisticsTarget,CL,true)],mo,'Diversion (%)',pct);
+}
+
+// ── DQ charts ─────────────────────────────────────────────────────────────
+function initDQCharts(D){
+  const DQD=D.dataQuality, mo=D.performanceTrends.months;
+  const pct=v=>v.toFixed(1)+'%';
+  buildChart('cDQE',[mkDs('Office',DQD.energy.office,CO),mkDs('Retail',DQD.energy.retail,CR),mkDs('Logistics',DQD.energy.logistics,CL),mkDs('98%',ref12(98),CR98,false,true),mkDs('95%',ref12(95),CR95,false,true)],mo,'Data Quality (%)',pct,101);
+  buildChart('cDQW',[mkDs('Office',DQD.water.office,CO),mkDs('Retail',DQD.water.retail,CR),mkDs('Logistics',DQD.water.logistics,CL),mkDs('98%',ref12(98),CR98,false,true),mkDs('95%',ref12(95),CR95,false,true)],mo,'Data Quality (%)',pct,101);
+  buildChart('cDQWs',[mkDs('Office',DQD.waste.office,CO),mkDs('Retail',DQD.waste.retail,CR),mkDs('Logistics',DQD.waste.logistics,CL),mkDs('98%',ref12(98),CR98,false,true),mkDs('95%',ref12(95),CR95,false,true)],mo,'Data Quality (%)',pct,101);
+}
+
+// ── Portfolio toggle ──────────────────────────────────────────────────────
+function togglePortfolio(port,btn){
+  VIS[port]=!VIS[port];const hide=!VIS[port];
+  btn.classList.toggle('active',VIS[port]);
+  [...PERF_IDS,...DQ_IDS].forEach(id=>{
+    const c=CH[id];if(!c)return;
+    const im=PERF_IDS.includes(id)?PERF_IDX:DQ_IDX;
+    im[port].forEach(i=>c.data.datasets[i].hidden=hide);
+    reScaleY(c,id);c.update();
+  });
+}
+
+// ── Collapsible ───────────────────────────────────────────────────────────
+function togSec(hdr){
+  hdr.nextElementSibling.classList.toggle('hide');
+  hdr.classList.toggle('closed');
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  WEATHER CHART
+// ════════════════════════════════════════════════════════════════════════════
+const W_SENSORS=[
+  {id:'sydney_cbd',label:'Sydney CBD',    color:'#2F7AB0'},
+  {id:'rhtc',      label:'RHTC',          color:'#579FD2'},
+  {id:'charlestown',label:'CSQ',          color:'#579FD2'},
+  {id:'dapto',     label:'Dapto',         color:'#579FD2'},
+  {id:'marrickville',     label:'MMertro',         color:'#579FD2'},
+  {id:'melb_cbd',  label:'Melbourne CBD', color:'#447472'},
+  {id:'chirnside', label:'Chirnside',color:'#6DA275'},
+  {id:'highpoint', label:'Highpoint',color:'#6DA275'},
+  {id:'parkmore', label:'Parkmore',color:'#6DA275'},
+  {id:'bris_cbd',  label:'Brisbane CBD',  color:'#E5900A'},
+  {id:'gold_coast',label:'Gold Coast',    color:'#F7B348'},
+  {id:'perth',     label:'Perth',         color:'#9855C5'}
+];
+const W_YS={
+  2026:{borderDash:[],    borderWidth:2.5,pointRadius:4.5,pointHoverRadius:7},
+  2025:{borderDash:[9,4], borderWidth:2.0,pointRadius:3.5,pointHoverRadius:6},
+  2024:{borderDash:[3,4], borderWidth:1.8,pointRadius:2.5,pointHoverRadius:5}
+};
+// Static y-axis ranges — computed from full dataset min/max; never changes on toggle
+const W_RANGE={
+  temp:{min:5, max:30,step:5,unit:'°C',label:'Temperature (°C)'},
+  hum: {min:40,max:90,step:5,unit:'%', label:'Humidity (%)'}
+};
+const W_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildWDatasets(D){
+  const ds=[];
+  for(const s of W_SENSORS){
+    for(const yr of [2024,2025,2026]){
+      for(const metric of ['temp','hum']){
+        const ys=W_YS[yr];
+        const mKey=metric==='temp'?'temperature':'humidity';
+        const dataArr=D.weather[mKey][s.id][yr];
+        const vis=(metric===wMetric)&&wYears.has(yr)&&wSensors.has(s.id);
+        ds.push({
+          label:`${s.label} ${yr}`,data:dataArr,
+          _metric:metric,_sensor:s.id,_year:yr,_sLabel:s.label,
+          borderColor:s.color,backgroundColor:'transparent',
+          borderWidth:ys.borderWidth,borderDash:ys.borderDash,
+          pointRadius:ys.pointRadius,pointHoverRadius:ys.pointHoverRadius,
+          pointBackgroundColor:s.color,pointBorderColor:'#fff',pointBorderWidth:1.5,
+          fill:false,tension:0.35,spanGaps:false,hidden:!vis
+        });
+      }
+    }
+  }
+  return ds;
+}
+
+function initWeatherChart(D){
+  const r0=W_RANGE.temp;
+  const ctx=document.getElementById('cWeather').getContext('2d');
+  wChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:W_MONTHS,datasets:buildWDatasets(D)},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      animation:false, // static per requirement
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'rgba(44,78,76,0.93)',titleFont:{size:11},bodyFont:{size:11},padding:10,
+          filter:item=>!item.dataset.hidden&&item.parsed.y!=null,
+          callbacks:{label:ctx=>{
+            if(ctx.dataset.hidden||ctx.parsed.y==null)return null;
+            const u=wMetric==='temp'?'°C':'%';
+            return ` ${ctx.dataset._sLabel} ${ctx.dataset._year}: ${ctx.parsed.y.toFixed(1)}${u}`;
+          }}
+        }
+      },
+      scales:{
+        x:{grid:{color:'#e4eaea'},ticks:{font:{size:11},color:'#555'}},
+        y:{
+          min:r0.min,max:r0.max,
+          grid:{color:'#e4eaea'},
+          title:{display:true,text:r0.label,font:{size:12,weight:'bold'},color:'#2E4E4C'},
+          ticks:{stepSize:r0.step,font:{size:11},color:'#555',callback:v=>v+r0.unit}
+        }
+      }
+    }
+  });
+}
+
+function updateWChart(){
+  if(!wChart)return;
+  wChart.data.datasets.forEach(d=>{
+    d.hidden=!(d._metric===wMetric&&wYears.has(d._year)&&wSensors.has(d._sensor));
+  });
+  const r=W_RANGE[wMetric];
+  wChart.options.scales.y.min=r.min;
+  wChart.options.scales.y.max=r.max;
+  wChart.options.scales.y.ticks.stepSize=r.step;
+  wChart.options.scales.y.ticks.callback=v=>v+r.unit;
+  wChart.options.scales.y.title.text=r.label;
+  wChart.update('none');
+}
+
+// ── Metric slider ─────────────────────────────────────────────────────────
+function updateMetricSlider(){
+  const a=document.querySelector('.mt-opt.active');
+  const bg=document.getElementById('mt-bg');
+  if(!a||!bg)return;
+  bg.style.width=a.offsetWidth+'px';
+  bg.style.left=a.offsetLeft+'px';
+}
+function setWMetric(metric,btn){
+  if(wMetric===metric)return;
+  wMetric=metric;
+  document.querySelectorAll('.mt-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updateMetricSlider();
+  updateWChart();
+}
+function togWYear(yr,btn){
+  if(wYears.has(yr)){wYears.delete(yr);btn.classList.remove('active');}
+  else{wYears.add(yr);btn.classList.add('active');}
+  updateWChart();
+}
+function togWSensor(sid,btn){
+  if(wSensors.has(sid)){wSensors.delete(sid);btn.classList.remove('active');}
+  else{wSensors.add(sid);btn.classList.add('active');}
+  updateWChart();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  MAIN RENDER
+// ════════════════════════════════════════════════════════════════════════════
+function renderAll(D){
+  renderHeader(D);
+  document.getElementById('main-content').innerHTML=[
+    renderPortfolioSummary(D),
+    renderPerfTrends(D),
+    renderDataQuality(D),
+    renderWeather(),
+    renderOfficeRetailPerformers('office',   `🏢 Office Portfolio — Best &amp; Worst Performers (MAT ${esc(D.report.period)})`,D),
+    renderOfficeRetailPerformers('retail',   `🛍️ Retail Portfolio — Best &amp; Worst Performers (MAT ${esc(D.report.period)})`,D),
+    renderLogisticsPerformers(               `🏭 Logistics Portfolio — Asset Performance (MAT ${esc(D.report.period)})`,D),
+    renderMissingData(D)
+  ].join('');
+
+  initPerfCharts(D);
+  initDQCharts(D);
+  initWeatherChart(D);
+
+  // Position metric slider pill after layout paint
+  requestAnimationFrame(()=>requestAnimationFrame(updateMetricSlider));
+}
+
+// ── Entry point ───────────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  if(window.GPT_DATA){
+    renderAll(window.GPT_DATA);
+  } else {
+    document.getElementById('main-content').innerHTML=
+      '<p style="padding:40px;text-align:center;color:#B71C1C">⚠️ <strong>data.js not found.</strong> Ensure <code>data.js</code> is in the same folder as <code>dashboard.html</code> and both are served from a web server (not opened directly as file://).</p>';
+  }
+});
+</script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    

@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPT Reimagined KPIs · Building Performance</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                   'Helvetica Neue', sans-serif;
+      background: #eef2f7; color: #2d3748;
+      font-size: 14px; line-height: 1.5;
+    }
+    a { text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    .page-header {
+      background: linear-gradient(135deg, #0a1f3c 0%, #1565c0 100%);
+      color: #fff; padding: 18px 32px 14px;
+    }
+    .page-header h1  { font-size: 21px; font-weight: 700; letter-spacing: -.3px; }
+    .page-header .sub{ font-size: 12.5px; opacity: .82; margin-top: 3px; }
+
+    /* ── NAV ─────────────────────────────────────────────── */
+    .nav-bar {
+      background: #0d2748; padding: 9px 32px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .nav-btn {
+      background: rgba(255,255,255,.12); color: #e2e8f0;
+      border: 1px solid rgba(255,255,255,.22);
+      padding: 5px 14px; border-radius: 6px; font-size: 13px;
+      transition: background .18s;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,.26); color: #fff; }
+    .nav-sep  { color: rgba(255,255,255,.3); }
+    .nav-meta { margin-left: auto; color: rgba(255,255,255,.65); font-size: 12px; }
+    .nav-meta strong { color: #93c5fd; }
+
+    /* ── DEMO BANNER ──────────────────────────────────────── */
+    .demo-banner {
+      background: #fffbeb; border-left: 4px solid #d97706;
+      padding: 9px 32px; font-size: 13px; color: #92400e;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+
+    /* ── GLOBAL FILTER BAR (sticky) ──────────────────────── */
+    .filter-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: #1e3a5f;
+      padding: 11px 32px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      box-shadow: 0 4px 14px rgba(0,0,0,.32);
+      border-bottom: 2px solid rgba(255,255,255,.12);
+    }
+    .filter-label {
+      color: #93c5fd; font-size: 13px; font-weight: 700; white-space: nowrap;
+    }
+    .filter-note {
+      margin-left: auto; color: rgba(255,255,255,.45);
+      font-size: 11.5px; font-style: italic; white-space: nowrap;
+    }
+
+    /* ── TAB BUTTONS — dark bg (filter bar) ─────────────── */
+    .tab-btn {
+      padding: 7px 18px;
+      border: 2px solid #93c5fd;
+      background: transparent; color: #93c5fd;
+      border-radius: 24px; font-size: 13px; font-weight: 600;
+      transition: all .18s;
+    }
+    .tab-btn:hover  { background: rgba(147,197,253,.15); }
+    .tab-btn.active { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+    /* ── TAB BUTTONS — light bg (sub-tabs inside cards) ──── */
+    .tab-btn.light        { border-color:#1565c0; color:#1565c0; background:#fff; }
+    .tab-btn.light:hover  { background: #dbeafe; }
+    .tab-btn.light.active { background: #1565c0; border-color:#1565c0; color:#fff; }
+    .tab-btn.sm { padding: 4px 13px; font-size: 12px; border-radius: 18px; border-width: 1.5px; }
+
+    /* ── MAIN ────────────────────────────────────────────── */
+    .main { max-width: 1440px; margin: 0 auto; padding: 22px 28px 44px; }
+
+    /* ── SECTION ─────────────────────────────────────────── */
+    .section { margin-bottom: 28px; }
+    .section-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; padding-bottom: 8px;
+      border-bottom: 2.5px solid #1565c0;
+      flex-wrap: wrap; gap: 6px;
+    }
+    .section-hdr h2 { font-size: 15px; font-weight: 700; color: #0a1f3c; }
+    .section-note   { font-size: 12px; color: #718096; }
+
+    /* ── PERIOD ROW ──────────────────────────────────────── */
+    .period-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 18px; flex-wrap: wrap; gap: 8px;
+    }
+    .period-label { font-size: 15px; font-weight: 700; color: #0a1f3c; }
+    .period-sub   { font-size: 12px; color: #718096; margin-top: 2px; }
+    .legend-row   { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ── BADGES ──────────────────────────────────────────── */
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; white-space: nowrap; }
+    .b-green { background: #d1fae5; color: #065f46; }
+    .b-amber { background: #fef3c7; color: #92400e; }
+    .b-red   { background: #fee2e2; color: #991b1b; }
+
+    /* ── PORTFOLIO SECTIONS ──────────────────────────────── */
+    .pf-section        { display: none; }
+    .pf-section.active {
+      display: block;
+      animation: fadeIn .22s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(5px); }
+      to   { opacity:1; transform:translateY(0);   }
+    }
+
+    /* ── COMPARISON TABLE ────────────────────────────────── */
+    .ctable-wrap {
+      background:#fff; border-radius:10px; padding:18px 20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.07); overflow-x:auto;
+    }
+    .ctable { width:100%; border-collapse:collapse; font-size:13px; }
+    .ctable th {
+      background:#0a1f3c; color:#fff;
+      padding:10px 14px; text-align:left; font-weight:600; white-space:nowrap;
+    }
+    .ctable th:first-child { border-radius:6px 0 0 0; }
+    .ctable th:last-child  { border-radius:0 6px 0 0; }
+    .ctable td  { padding:9px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+    .ctable tr:hover td { background:#f8fafc; }
+    .kpi-cell { display:flex; align-items:flex-start; gap:8px; }
+
+    /* ── KPI GRID ────────────────────────────────────────── */
+    .kpi-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(295px,1fr));
+      gap:14px;
+    }
+
+    /* ── KPI CARD ────────────────────────────────────────── */
+    .kpi-card {
+      background:#fff; border-radius:10px;
+      padding:16px 17px 13px;
+      box-shadow:0 2px 10px rgba(0,0,0,.07);
+      border:1px solid #e2e8f0;
+      display:flex; flex-direction:column;
+    }
+    .kpi-top   { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .kpi-meta  { display:flex; align-items:flex-start; gap:9px; flex:1; }
+    .kpi-emoji { font-size:20px; line-height:1; margin-top:2px; flex-shrink:0; }
+    .kpi-name  { font-size:11px; font-weight:700; color:#4a5568;
+                 text-transform:uppercase; letter-spacing:.5px; }
+    .kpi-desc  { font-size:11px; color:#a0aec0; margin-top:1px; }
+    .kpi-main  { display:flex; align-items:baseline; gap:5px; margin-bottom:3px; }
+    .kpi-val   { font-size:30px; font-weight:800; color:#0a1f3c; line-height:1; }
+    .kpi-unit  { font-size:13px; color:#718096; }
+    .kpi-tgt   { font-size:12px; color:#718096; margin-bottom:9px; }
+    .kpi-tgt strong { color:#4a5568; }
+    .diff-pos { color:#059669; font-weight:600; }
+    .diff-neg { color:#dc2626; font-weight:600; }
+    .diff-neu { color:#d97706; font-weight:600; }
+
+    .prog-bg   { background:#e2e8f0; border-radius:5px; height:8px; overflow:hidden; margin-bottom:4px; }
+    .prog-fill { height:100%; border-radius:5px; transition:width .5s ease; }
+    .prog-lbl  { display:flex; justify-content:space-between; font-size:10.5px; color:#a0aec0; margin-bottom:8px; }
+    .spark-wrap{ height:58px; margin-top:auto; }
+
+    /* ── NABERS BOX ──────────────────────────────────────── */
+    .nabers-box {
+      background:#fff; border-radius:10px; padding:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.07);
+    }
+    .nabers-pills {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+      gap:10px; margin-bottom:22px;
+    }
+    .np { border-radius:8px; padding:12px 14px; border:1px solid #e2e8f0; }
+    .np-label { font-size:11px; font-weight:700; color:#4a5568;
+                text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+    .np-val  { font-size:26px; font-weight:800; color:#0a1f3c; }
+    .np-unit { font-size:12px; color:#718096; margin-left:2px; }
+    .np-tgt  { font-size:11px; color:#718096; margin-top:3px; }
+    .np-green{ background:#ecfdf5; border-color:#6ee7b7; }
+    .np-amber{ background:#fffbeb; border-color:#fcd34d; }
+    .np-red  { background:#fef2f2; border-color:#fca5a5; }
+
+    .nabers-charts-row {
+      display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:22px;
+    }
+    .nc-title { font-size:13px; font-weight:700; color:#0a1f3c; margin-bottom:8px; }
+    .nc-wrap  { height:250px; position:relative; }
+    .nh-title { font-size:13px; font-weight:700; color:#0a1f3c; margin-bottom:6px; }
+    .nh-wrap  { height:220px; position:relative; margin-bottom:20px; }
+
+    /* ── NABERS TABLE ────────────────────────────────────── */
+    .nt-wrap  { overflow-x:auto; }
+    .nt-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .nt-table th {
+      background:#f8fafc; padding:7px 10px; text-align:left;
+      font-weight:700; color:#4a5568; border-bottom:2px solid #e2e8f0; white-space:nowrap;
+    }
+    .nt-table td { padding:6px 10px; border-bottom:1px solid #f1f5f9; }
+    .nt-table tfoot tr:nth-child(1) td { background:#dbeafe; font-weight:700; }
+    .nt-table tfoot tr:nth-child(2) td { background:#fffbeb; font-weight:700; }
+    .sbar-wrap { display:inline-flex; align-items:center; gap:6px; }
+    .sbar      { display:inline-block; height:10px; border-radius:3px; }
+
+    /* ── TRENDS ──────────────────────────────────────────── */
+    .trends-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(420px,1fr));
+      gap:14px;
+    }
+    .trend-card {
+      background:#fff; border-radius:10px; padding:16px 18px;
+      box-shadow:0 2px 10px rgba(0,0,0,.07);
+    }
+    .trend-card h3 { font-size:13px; font-weight:700; color:#0a1f3c; margin-bottom:10px; }
+    .tr-wrap { height:200px; position:relative; }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    .page-footer {
+      background:#0a1f3c; color:rgba(255,255,255,.6);
+      text-align:center; padding:16px 24px; font-size:12px;
+    }
+    .page-footer .dn { font-size:11px; color:rgba(255,255,255,.32); margin-top:4px; }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media(max-width:900px){
+      .main { padding:14px 14px 36px; }
+      .nabers-charts-row { grid-template-columns:1fr; }
+      .trends-grid       { grid-template-columns:1fr; }
+      .kpi-grid          { grid-template-columns:1fr; }
+      .page-header,.nav-bar,.demo-banner,.filter-bar { padding-left:16px; padding-right:16px; }
+      .filter-note { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ════════════════════════════════════════════ -->
+<header class="page-header">
+  <h1>🔬 GPT Group · Reimagined Performance KPIs</h1>
+  <div class="sub">
+    Building Performance Team &nbsp;·&nbsp; MAT: Jul 2025 – Jun 2026
+    &nbsp;·&nbsp; Data Source: Envizi Platform
+  </div>
+</header>
+
+<!-- ═══ NAV ═══════════════════════════════════════════════ -->
+<nav class="nav-bar">
+  <a href="01.dashboard.html" class="nav-btn">← Performance Report</a>
+  <a href="02.asset.html"     class="nav-btn">📊 Asset Dashboard</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-meta">
+    Reporting Period: <strong>June 2026</strong>
+    &nbsp;·&nbsp; MAT End: <strong>30 June 2026</strong>
+  </span>
+</nav>
+
+<!-- ═══ DEMO BANNER ════════════════════════════════════════ -->
+<div class="demo-banner">
+  ⚠️&nbsp;
+  <span>
+    <strong>INDICATIVE / DEMO DATA ONLY</strong> — All metrics, targets and values
+    use sample data to illustrate potential KPI visualisations. Methodologies,
+    data boundaries and targets must be confirmed before production use.
+  </span>
+</div>
+
+<!-- ═══ GLOBAL FILTER BAR ══════════════════════════════════ -->
+<div class="filter-bar">
+  <span class="filter-label">📂 Portfolio Filter:</span>
+  <div id="global-tabs" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="tab-btn active" onclick="switchGlobal(this,'all')">
+      🏙️ All Portfolios
+    </button>
+    <button class="tab-btn" onclick="switchGlobal(this,'office')">
+      🏢 Office
+    </button>
+    <button class="tab-btn" onclick="switchGlobal(this,'retail')">
+      🛍️ Retail
+    </button>
+    <button class="tab-btn" onclick="switchGlobal(this,'logistics')">
+      🏭 Logistics
+    </button>
+  </div>
+  <span class="filter-note">↕ Applies to all sections below</span>
+</div>
+
+<!-- ═══ MAIN ═══════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Period row + legend -->
+  <div class="period-row">
+    <div>
+      <div class="period-label">
+        Expanded KPI Dashboard — MAT Jul 2025 to Jun 2026
+      </div>
+      <div class="period-sub">
+        Generated: July 2026 &nbsp;·&nbsp;
+        ⚠️ All values are indicative / sample only
+      </div>
+    </div>
+    <div class="legend-row">
+      <span class="badge b-green">✓ On Track</span>
+      <span class="badge b-amber">⚠ At Risk</span>
+      <span class="badge b-red">✕ Behind Target</span>
+    </div>
+  </div>
+
+  <!-- ═══ KPI SUMMARY ════════════════════════════════════ -->
+  <section class="section">
+    <div class="section-hdr">
+      <h2>📊 KPI Summary — MAT to June 2026</h2>
+      <span class="section-note">
+        Sparklines show rolling 12-month MAT ·
+        Use the filter bar above to switch portfolio view
+      </span>
+    </div>
+
+    <div id="pf-all" class="pf-section active">
+      <div class="ctable-wrap">
+        <table class="ctable" id="comp-table"></table>
+      </div>
+    </div>
+    <div id="pf-office"    class="pf-section">
+      <div class="kpi-grid" id="kpi-office"></div>
+    </div>
+    <div id="pf-retail"    class="pf-section">
+      <div class="kpi-grid" id="kpi-retail"></div>
+    </div>
+    <div id="pf-logistics" class="pf-section">
+      <div class="kpi-grid" id="kpi-logistics"></div>
+    </div>
+  </section>
+
+  <!-- ═══ NABERS RATINGS ══════════════════════════════════ -->
+  <section class="section">
+    <div class="section-hdr">
+      <h2>⭐ Portfolio NABERS Ratings — Weighted Average by Rated Area</h2>
+      <span class="section-note"
+        title="Σ(rating × rated area) ÷ Σ(rated area)">
+        ℹ️ Targets: 4.7★ Energy &nbsp;|&nbsp; 4.0★ Water
+        &nbsp;·&nbsp; Dummy rated areas used for illustration
+      </span>
+    </div>
+
+    <div class="nabers-box">
+      <div class="nabers-pills" id="nabers-pills"></div>
+      <div class="nabers-charts-row">
+        <div>
+          <div class="nc-title">
+            ⚡ NABERS Energy — Weighted Average vs 4.7★ Target
+          </div>
+          <div class="nc-wrap"><canvas id="nabersEChart"></canvas></div>
+        </div>
+        <div>
+          <div class="nc-title">
+            💧 NABERS Water — Weighted Average vs 4.0★ Target
+          </div>
+          <div class="nc-wrap"><canvas id="nabersWChart"></canvas></div>
+        </div>
+      </div>
+      <div class="nh-title">📈 NABERS Energy — Historical Portfolio Trend</div>
+      <div style="font-size:11.5px;color:#92400e;background:#fffbeb;
+                  padding:5px 10px;border-radius:4px;margin-bottom:8px;">
+        ⚠️ Historical trend uses dummy representative data — actual values
+        depend on certificate alignment and rated area coverage.
+      </div>
+      <div class="nh-wrap"><canvas id="nabersHistChart"></canvas></div>
+      <div id="nabers-asset-section"></div>
+    </div>
+  </section>
+
+  <!-- ═══ PERFORMANCE TRENDS ══════════════════════════════ -->
+  <section class="section">
+    <div class="section-hdr">
+      <h2>📈 Performance Trends — Rolling 12-Month MAT (Jul 2025 – Jun 2026)</h2>
+      <span class="section-note">
+        "All Portfolios" overlays all three lines per chart ·
+        Individual tabs show actual vs target
+      </span>
+    </div>
+    <div class="trends-grid">
+      <div class="trend-card">
+        <h3>🏭 Emissions Intensity [kgCO₂e/sqm]</h3>
+        <div class="tr-wrap"><canvas id="tr-emissions"></canvas></div>
+      </div>
+      <div class="trend-card">
+        <h3>☀️ Renewable Energy Ratio [%]</h3>
+        <div class="tr-wrap"><canvas id="tr-renewable"></canvas></div>
+      </div>
+      <div class="trend-card">
+        <h3>⚡ Peak Demand Performance [kVA]</h3>
+        <div class="tr-wrap"><canvas id="tr-peak"></canvas></div>
+      </div>
+      <div class="trend-card">
+        <h3>💧 Water Efficiency Score [L/person/yr]</h3>
+        <div class="tr-wrap"><canvas id="tr-water"></canvas></div>
+      </div>
+      <div class="trend-card">
+        <h3>♻️ Total Landfill Intensity [kg/sqm]</h3>
+        <div class="tr-wrap"><canvas id="tr-landfill"></canvas></div>
+      </div>
+      <div class="trend-card">
+        <h3>⭐ NABERS Energy Portfolio Avg [★]</h3>
+        <div class="tr-wrap"><canvas id="tr-nabers"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ══════════════════════════════════════════════ -->
+<footer class="page-footer">
+  🏢 GPT Group · Building Performance Team · Reimagined KPIs Dashboard ·
+  Data Source: Envizi Platform · MAT: Jul 2025 – Jun 2026 · Generated: July 2026
+  <div class="dn">
+    ⚠️ All values are indicative / sample data for visualisation purposes only
+    — not for reporting use
+  </div>
+</footer>
+
+
+<!-- ═══ SCRIPTS ══════════════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ══════════════════════════════════════════════════════════════
+const MONTHS = [
+  'Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25',
+  'Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'
+];
+
+const PF = {
+  office:    { full:'#1565c0', fill:'#1565c018', label:'🏢 Office'    },
+  retail:    { full:'#e91e63', fill:'#e91e6318', label:'🛍️ Retail'    },
+  logistics: { full:'#16a34a', fill:'#16a34a18', label:'🏭 Logistics' }
+};
+
+// ── KPI metadata ─────────────────────────────────────────────
+// dec = decimal places used by fmt() and chart ticks
+const KPIS = [
+  { key:'emissions',
+    icon:'🏭', name:'Emissions Intensity',
+    desc:'Scope 1 & 2 GHG per NLA (MAT)',
+    dec:0, color:'#ef4444' },
+  { key:'renewable',
+    icon:'☀️', name:'Renewable Energy Ratio',
+    desc:'% electricity from renewables (solar + PPA)',
+    dec:1, color:'#f59e0b' },
+  { key:'peakDemand',
+    icon:'⚡', name:'Peak Demand Performance',
+    desc:'Total portfolio monthly peak demand',
+    dec:0, color:'#8b5cf6' },
+  { key:'waterEff',
+    icon:'💧', name:'Water Efficiency Score',
+    desc:'Potable water per occupied FTE per year',
+    dec:0, color:'#3b82f6' },
+  { key:'landfill',
+    icon:'♻️', name:'Total Landfill Intensity',
+    desc:'Waste to landfill per NLA',
+    dec:1, color:'#10b981' },
+  { key:'nabersEnergy',
+    icon:'⭐', name:'NABERS Energy Portfolio Avg',
+    desc:'Weighted avg by rated area (see section below)',
+    dec:2, color:'#f5a623' }
+];
+
+// ══════════════════════════════════════════════════════════════
+//  DUMMY DATA
+//
+//  Badge logic (lwr = lower is better):
+//    delta = lwr  ? (actual−target)/target×100
+//                 : (target−actual)/target×100
+//    delta ≤ 0   → ✓ On Track
+//    delta 0–5%  → ⚠ At Risk
+//    delta > 5%  → ✕ Behind Target
+//
+//  Planned distribution (unchanged from previous version):
+//    All       : 3✓  2⚠  1✕  (peak demand flips to On Track with new kVA values)
+//    Office    : 3✓  1⚠  2✕
+//    Retail    : 1✓  3⚠  2✕
+//    Logistics : 3✓  0⚠  3✕
+//
+//  Unit changes applied:
+//    emissions  : tCO₂e/sqm → kgCO₂e/sqm  (all values ×1000)
+//    peakDemand : replaced with actual kVA values (32,470 / 35,000 for All)
+//    waterEff   : kL/person → L/person/yr  (all values ×1000)
+//    landfill   : t/sqm     → kg/sqm       (all values ×1000)
+// ══════════════════════════════════════════════════════════════
+const D = {
+
+  // ── ALL PORTFOLIOS (blended) ─────────────────────────────
+  //   emissions  82 / 78  kgCO₂e/sqm   → Behind   (+5.1%)
+  //   renewable  30.5/31.0 %            → At Risk  (−1.6%)
+  //   peakDemand 32,470/35,000 kVA      → On Track (−7.2%)  ← new values
+  //   waterEff   11,400/11,000 L/p/yr   → At Risk  (+3.6%)
+  //   landfill   16.3/17.5 kg/sqm       → On Track (−6.9%)
+  //   nabersEnergy 4.72/4.70 ★          → On Track (−0.4%)
+  all: {
+    emissions: {
+      actual:82,  target:78,  unit:'kgCO₂e/sqm', lwr:true,
+      trend:[89,88,88,87,86,86,85,85,84,83,83,82]
+    },
+    renewable: {
+      actual:30.5, target:31.0, unit:'%', lwr:false,
+      trend:[28.1,28.4,28.8,29.1,29.4,29.7,29.9,30.1,30.2,30.3,30.4,30.5]
+    },
+    peakDemand: {
+      actual:32470, target:35000, unit:'kVA', lwr:true,
+      trend:[35200,35100,34900,34600,34200,33800,33400,33100,32900,32700,32600,32470]
+    },
+    waterEff: {
+      actual:11400, target:11000, unit:'L/person/yr', lwr:true,
+      trend:[11800,11800,11700,11700,11600,11600,11600,11500,11500,11500,11400,11400]
+    },
+    landfill: {
+      actual:16.3, target:17.5, unit:'kg/sqm', lwr:true,
+      trend:[18.0,17.9,17.8,17.7,17.6,17.5,17.4,17.2,17.0,16.8,16.5,16.3]
+    },
+    nabersEnergy: {
+      actual:4.72, target:4.70, unit:'★', lwr:false,
+      trend:[4.62,4.63,4.64,4.65,4.66,4.67,4.68,4.69,4.70,4.71,4.71,4.72]
+    }
+  },
+
+  // ── OFFICE ──────────────────────────────────────────────
+  //   emissions    59 / 68  kgCO₂e/sqm  → On Track (−13.2%)
+  //   renewable  29.8/31.0 %             → At Risk  (−3.9%)
+  //   peakDemand 18,300/17,200 kVA       → Behind   (+6.4%)
+  //   waterEff   7,200/8,500 L/p/yr      → On Track (−15.3%)
+  //   landfill   18.3/15.5 kg/sqm        → Behind   (+18.1%)
+  //   nabersEnergy 5.02/4.70 ★           → On Track (+6.8%)
+  office: {
+    emissions: {
+      actual:59,  target:68,  unit:'kgCO₂e/sqm', lwr:true,
+      trend:[72,71,70,69,68,67,66,65,63,62,60,59]
+    },
+    renewable: {
+      actual:29.8, target:31.0, unit:'%', lwr:false,
+      trend:[27.0,27.4,27.8,28.2,28.5,28.8,29.0,29.2,29.4,29.5,29.7,29.8]
+    },
+    peakDemand: {
+      actual:18300, target:17200, unit:'kVA', lwr:true,
+      trend:[16800,16900,17000,17100,17200,17300,17500,17600,17800,17900,18100,18300]
+    },
+    waterEff: {
+      actual:7200, target:8500, unit:'L/person/yr', lwr:true,
+      trend:[8900,8800,8700,8600,8500,8400,8300,8200,8000,7800,7500,7200]
+    },
+    landfill: {
+      actual:18.3, target:15.5, unit:'kg/sqm', lwr:true,
+      trend:[15.2,15.3,15.5,15.7,16.0,16.3,16.5,16.7,17.0,17.3,17.8,18.3]
+    },
+    nabersEnergy: {
+      actual:5.02, target:4.70, unit:'★', lwr:false,
+      trend:[4.95,4.96,4.97,4.98,4.98,4.99,5.00,5.00,5.01,5.01,5.02,5.02]
+    }
+  },
+
+  // ── RETAIL ──────────────────────────────────────────────
+  //   emissions   103 / 95  kgCO₂e/sqm  → Behind   (+8.4%)
+  //   renewable  21.2/22.0 %             → At Risk  (−3.6%)
+  //   peakDemand 11,400/11,100 kVA       → At Risk  (+2.7%)
+  //   waterEff   17,800/16,000 L/p/yr    → Behind   (+11.3%)
+  //   landfill   21.6/22.5 kg/sqm        → On Track (−4.0%)
+  //   nabersEnergy 4.51/4.70 ★           → At Risk  (−4.0%)
+  retail: {
+    emissions: {
+      actual:103, target:95,  unit:'kgCO₂e/sqm', lwr:true,
+      trend:[98,98,99,99,100,100,101,101,102,102,103,103]
+    },
+    renewable: {
+      actual:21.2, target:22.0, unit:'%', lwr:false,
+      trend:[19.5,19.8,20.1,20.3,20.5,20.7,20.8,20.9,21.0,21.1,21.1,21.2]
+    },
+    peakDemand: {
+      actual:11400, target:11100, unit:'kVA', lwr:true,
+      trend:[10900,10950,11000,11050,11100,11150,11200,11250,11280,11320,11360,11400]
+    },
+    waterEff: {
+      actual:17800, target:16000, unit:'L/person/yr', lwr:true,
+      trend:[16200,16300,16400,16500,16600,16800,17000,17200,17400,17500,17600,17800]
+    },
+    landfill: {
+      actual:21.6, target:22.5, unit:'kg/sqm', lwr:true,
+      trend:[23.0,22.9,22.8,22.6,22.5,22.4,22.2,22.0,21.9,21.8,21.7,21.6]
+    },
+    nabersEnergy: {
+      actual:4.51, target:4.70, unit:'★', lwr:false,
+      trend:[4.44,4.45,4.45,4.46,4.46,4.47,4.47,4.48,4.48,4.49,4.50,4.51]
+    }
+  },
+
+  // ── LOGISTICS ───────────────────────────────────────────
+  //   emissions    31 / 35  kgCO₂e/sqm  → On Track (−11.4%)
+  //   renewable  47.2/40.0 %             → On Track (+18.0%)
+  //   peakDemand  2,770/2,600 kVA        → Behind   (+6.5%)
+  //   waterEff    5,100/4,500 L/p/yr     → Behind   (+13.3%)
+  //   landfill    8.8/9.5 kg/sqm         → On Track (−7.4%)
+  //   nabersEnergy 3.00/4.70 ★           → Behind   (−36.2%)
+  logistics: {
+    emissions: {
+      actual:31,  target:35,  unit:'kgCO₂e/sqm', lwr:true,
+      trend:[38,37,36,36,35,34,34,33,33,32,32,31]
+    },
+    renewable: {
+      actual:47.2, target:40.0, unit:'%', lwr:false,
+      trend:[41.5,42.0,42.5,43.1,43.6,44.2,44.8,45.3,45.8,46.2,46.7,47.2]
+    },
+    peakDemand: {
+      actual:2770, target:2600, unit:'kVA', lwr:true,
+      trend:[2450,2480,2500,2520,2550,2580,2610,2640,2670,2700,2730,2770]
+    },
+    waterEff: {
+      actual:5100, target:4500, unit:'L/person/yr', lwr:true,
+      trend:[4600,4600,4600,4700,4700,4700,4700,4800,4800,4900,5000,5100]
+    },
+    landfill: {
+      actual:8.8,  target:9.5,  unit:'kg/sqm', lwr:true,
+      trend:[10.0,9.9,9.8,9.7,9.6,9.5,9.4,9.3,9.2,9.1,9.0,8.8]
+    },
+    nabersEnergy: {
+      actual:3.00, target:4.70, unit:'★', lwr:false,
+      trend:[2.50,2.55,2.60,2.65,2.70,2.75,2.80,2.85,2.88,2.90,2.95,3.00]
+    }
+  }
+};
+
+// ── NABERS asset data ────────────────────────────────────────
+const NABERS = {
+  office: {
+    tgtE:4.7, tgtW:4.0,
+    assets:[
+      {name:'150 Collins St',        area:25000, E:5.0, W:4.0},
+      {name:'580 George Street',     area:56000, E:5.5, W:4.0},
+      {name:'8 Exhibition St',       area:47000, E:4.5, W:4.0},
+      {name:'161 Castlereagh St',    area:53000, E:5.0, W:4.5},
+      {name:'2 Southbank Blvd',      area:48000, E:4.5, W:4.0},
+      {name:'32 Smith Street',       area:22000, E:5.5, W:5.0},
+      {name:'4 Murray Rose',         area:18000, E:5.5, W:5.5},
+      {name:'530 Collins St',        area:51000, E:4.5, W:4.0},
+      {name:'60 Station Street',     area:27000, E:5.0, W:4.5},
+      {name:'7 Macquarie Place',     area:16000, E:4.5, W:4.0},
+      {name:'800-808 Bourke St',     area:35000, E:5.5, W:5.5},
+      {name:'CBW - 181 William St',  area:29000, E:5.5, W:5.0},
+      {name:'CBW - 550 Bourke St',   area:16000, E:5.5, W:5.0},
+      {name:'Citigroup Centre',      area:64000, E:5.0, W:3.5},
+      {name:'Darling Park 1',        area:47000, E:5.0, W:5.0},
+      {name:'Darling Park 2',        area:60000, E:5.5, W:4.5},
+      {name:'Darling Park 3',        area:41000, E:5.0, W:4.5},
+      {name:'Melbourne Central Off', area:42000, E:5.0, W:5.0},
+      {name:'One One One Eagle St',  area:60000, E:5.5, W:4.0},
+      {name:'Queen and Collins',     area:38000, E:4.5, W:4.5},
+      {name:'Riverside Centre',      area:60000, E:5.0, W:3.5},
+      {name:'workplace6',            area:16000, E:5.5, W:5.0},
+      {name:'Cockle Bay',            area: 9000, E:1.0, W:null}
+    ]
+  },
+  retail: {
+    tgtE:4.7, tgtW:4.0,
+    assets:[
+      {name:'Belmont Forum',            area: 65000, E:null, W:null},
+      {name:'Charlestown',              area: 73000, E:5.0,  W:4.0 },
+      {name:'Chirnside Park',           area: 52000, E:5.0,  W:3.5 },
+      {name:'Cockburn Gateway',         area: 58000, E:null, W:null},
+      {name:'Dapto Mall',               area: 24000, E:5.5,  W:4.5 },
+      {name:'Highpoint',                area:121000, E:5.0,  W:2.5 },
+      {name:'Karrinyup',                area: 88000, E:4.0,  W:3.0 },
+      {name:'Macarthur Square',         area:103000, E:4.5,  W:4.0 },
+      {name:'Macquarie Centre',         area:118000, E:5.0,  W:2.0 },
+      {name:'Malvern Central',          area: 27000, E:4.0,  W:3.5 },
+      {name:'Marrickville Metro',       area: 46000, E:4.0,  W:2.5 },
+      {name:'Melbourne Central Retail', area: 82000, E:1.5,  W:2.5 },
+      {name:'Pacific Fair',             area:135000, E:5.0,  W:3.5 },
+      {name:'Parkmore',                 area: 52000, E:4.0,  W:3.5 },
+      {name:'RHTC',                     area: 49000, E:5.0,  W:2.0 },
+      {name:'Sunshine Plaza',           area:122000, E:5.0,  W:3.0 }
+    ]
+  },
+  logistics: {
+    tgtE:4.7, tgtW:4.0,
+    assets:[
+      {name:'Quad 1', area:12000, E:5.5, W:4.5},
+      {name:'Quad 4', area:10000, E:0.0, W:0.0}
+    ]
+  }
+};
+
+// Historical NABERS Energy (dummy representative FY values)
+const NABERS_HIST = {
+  labels:    ['FY2022','FY2023','FY2024','FY2025 (current)'],
+  office:    [4.72, 4.85, 5.02, 5.02],
+  retail:    [4.28, 4.38, 4.45, 4.51],
+  logistics: [1.80, 2.20, 2.70, 3.00]
+};
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+
+// fmt — formats a number to d decimal places.
+// Integers ≥ 1,000 (or ≤ −1,000) get comma separators for readability.
+const fmt = (v, d) => {
+  if (v == null) return '—';
+  if (d === 0) {
+    const n = Math.round(Number(v));
+    return (Math.abs(n) >= 1000)
+      ? n.toLocaleString()
+      : String(n);
+  }
+  return Number(v).toFixed(d);
+};
+
+function getBadge(actual, target, lwr) {
+  const delta = lwr
+    ? ((actual - target) / target) * 100
+    : ((target - actual) / target) * 100;
+  if (delta <= 0) return { cls:'b-green', label:'✓ On Track' };
+  if (delta <= 5) return { cls:'b-amber', label:'⚠ At Risk'  };
+  return               { cls:'b-red',   label:'✕ Behind'   };
+}
+
+function perfPct(actual, target, lwr) {
+  return Math.max(2, Math.min(100,
+    lwr ? (target / actual) * 100 : (actual / target) * 100));
+}
+
+function starBarHTML(rating, maxW = 78) {
+  if (rating === null || rating === undefined)
+    return '<span style="color:#a0aec0;">No rating</span>';
+  const w   = Math.round((Math.min(rating, 6) / 6) * maxW);
+  const col = rating >= 4.5 ? '#16a34a'
+            : rating >= 3.0 ? '#d97706' : '#dc2626';
+  return `<span class="sbar-wrap">
+    <span class="sbar" style="width:${w}px;background:${col};"></span>
+    <span>${rating.toFixed(1)}★</span>
+  </span>`;
+}
+
+function calcWtdAvg(assets, key) {
+  let sum = 0, area = 0;
+  assets.forEach(a => {
+    if (a[key] !== null && a[key] !== undefined)
+      { sum += a[key] * a.area; area += a.area; }
+  });
+  return area > 0 ? +(sum / area).toFixed(2) : null;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GLOBAL STATE
+// ══════════════════════════════════════════════════════════════
+let currentPf = 'all';
+const sparkMap   = {};
+const trendMap   = {};
+let nabersEChartInst = null;
+let nabersWChartInst = null;
+let nabersHChartInst = null;
+
+// ══════════════════════════════════════════════════════════════
+//  GLOBAL TAB SWITCH
+// ══════════════════════════════════════════════════════════════
+function switchGlobal(btn, pf) {
+  currentPf = pf;
+
+  // 1 — tab styling
+  document.querySelectorAll('#global-tabs .tab-btn')
+          .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // 2 — KPI Summary section
+  document.querySelectorAll('.pf-section')
+          .forEach(el => el.classList.remove('active'));
+  document.getElementById(`pf-${pf}`).classList.add('active');
+  if (pf !== 'all') buildKpiCards(pf);
+
+  // 3 — NABERS section
+  renderNabersPills(pf);
+  updateNabersBarHighlight(pf);
+  renderNabersHistChart(pf);
+  renderNabersAssetSection(pf);
+
+  // 4 — Trend charts
+  renderTrendCharts(pf);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  KPI — COMPARISON TABLE (All Portfolios view)
+// ══════════════════════════════════════════════════════════════
+function buildCompTable() {
+  const pfs   = ['office','retail','logistics'];
+  const heads = {
+    office:'🏢 Office',
+    retail:'🛍️ Retail',
+    logistics:'🏭 Logistics'
+  };
+
+  let html = `<thead><tr>
+    <th style="width:220px">KPI Metric</th>
+    ${pfs.map(p => `<th>${heads[p]}</th>`).join('')}
+  </tr></thead><tbody>`;
+
+  KPIS.forEach(kpi => {
+    html += `<tr><td>
+      <div class="kpi-cell">
+        <span style="font-size:18px">${kpi.icon}</span>
+        <div>
+          <div style="font-weight:700;color:#0a1f3c">${kpi.name}</div>
+          <div style="font-size:11px;color:#a0aec0">${kpi.desc}</div>
+        </div>
+      </div>
+    </td>`;
+
+    pfs.forEach(pf => {
+      const d  = D[pf][kpi.key];
+      const b  = getBadge(d.actual, d.target, d.lwr);
+      const dp = ((d.actual - d.target) / d.target) * 100;
+      const dc = b.cls==='b-green' ? '#059669'
+               : b.cls==='b-amber' ? '#d97706' : '#dc2626';
+      html += `<td>
+        <div style="font-weight:700;font-size:15px;color:#0a1f3c">
+          ${fmt(d.actual, kpi.dec)}
+          <span style="font-size:12px;color:#718096;font-weight:400">
+            &nbsp;${d.unit}
+          </span>
+        </div>
+        <div style="font-size:11px;color:${dc};margin:2px 0 4px">
+          ${dp >= 0 ? '+' : ''}${dp.toFixed(1)}% vs target
+        </div>
+        <span class="badge ${b.cls}">${b.label}</span>
+      </td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody>';
+  document.getElementById('comp-table').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  KPI — CARDS (lazy-built per portfolio, never rebuilt)
+// ══════════════════════════════════════════════════════════════
+function buildKpiCards(pf) {
+  const grid = document.getElementById(`kpi-${pf}`);
+  if (!grid || grid.childElementCount > 0) return;
+
+  KPIS.forEach(kpi => {
+    const d   = D[pf][kpi.key];
+    const b   = getBadge(d.actual, d.target, d.lwr);
+    const pp  = perfPct(d.actual, d.target, d.lwr);
+    const pc  = b.cls==='b-green' ? '#10b981'
+              : b.cls==='b-amber' ? '#f59e0b' : '#ef4444';
+    const dp  = ((d.actual - d.target) / d.target) * 100;
+    const dc  = b.cls==='b-green' ? 'diff-pos'
+              : b.cls==='b-amber' ? 'diff-neu' : 'diff-neg';
+    const cid = `sp-${pf}-${kpi.key}`;
+
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.innerHTML = `
+      <div class="kpi-top">
+        <div class="kpi-meta">
+          <span class="kpi-emoji">${kpi.icon}</span>
+          <div>
+            <div class="kpi-name">${kpi.name}</div>
+            <div class="kpi-desc">${kpi.desc}</div>
+          </div>
+        </div>
+        <span class="badge ${b.cls}">${b.label}</span>
+      </div>
+      <div class="kpi-main">
+        <span class="kpi-val">${fmt(d.actual, kpi.dec)}</span>
+        <span class="kpi-unit">&nbsp;${d.unit}</span>
+      </div>
+      <div class="kpi-tgt">
+        Target: <strong>${fmt(d.target, kpi.dec)} ${d.unit}</strong>
+        &nbsp;·&nbsp;
+        <span class="${dc}">
+          ${dp >= 0 ? '+' : ''}${dp.toFixed(1)}% vs target
+        </span>
+      </div>
+      <div class="prog-bg">
+        <div class="prog-fill"
+             style="width:${pp}%;background:${pc};"></div>
+      </div>
+      <div class="prog-lbl">
+        <span>0%</span>
+        <span>vs Target: <strong>${pp.toFixed(0)}%</strong></span>
+        <span>100% = at target</span>
+      </div>
+      <div class="spark-wrap"><canvas id="${cid}"></canvas></div>`;
+    grid.appendChild(card);
+  });
+
+  setTimeout(() => {
+    KPIS.forEach(kpi => {
+      const d   = D[pf][kpi.key];
+      const cid = `sp-${pf}-${kpi.key}`;
+      const ctx = document.getElementById(cid);
+      if (!ctx) return;
+      if (sparkMap[cid]) sparkMap[cid].destroy();
+      sparkMap[cid] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: MONTHS,
+          datasets: [
+            { data: d.trend,
+              borderColor: kpi.color,
+              backgroundColor: kpi.color + '18',
+              borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true },
+            { data: Array(12).fill(d.target),
+              borderColor: '#94a3b8', borderWidth: 1.5,
+              borderDash: [4,3], pointRadius: 0, fill: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: i => MONTHS[i[0].dataIndex],
+                label: i => i.datasetIndex === 0
+                  ? `Actual: ${fmt(i.raw, kpi.dec)} ${d.unit}`
+                  : `Target: ${fmt(d.target, kpi.dec)} ${d.unit}`
+              }
+            }
+          },
+          scales: { x:{ display:false }, y:{ display:false } }
+        }
+      });
+    });
+  }, 60);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NABERS — SUMMARY PILLS
+// ══════════════════════════════════════════════════════════════
+function renderNabersPills(pf) {
+  const list  = pf === 'all'
+    ? ['office','retail','logistics'] : [pf];
+  const heads = {
+    office:'🏢 Office',
+    retail:'🛍️ Retail',
+    logistics:'🏭 Logistics'
+  };
+  let html = '';
+  list.forEach(p => {
+    const nd   = NABERS[p];
+    const avgE = calcWtdAvg(nd.assets, 'E');
+    const avgW = calcWtdAvg(nd.assets, 'W');
+    const bE   = getBadge(avgE, nd.tgtE, false);
+    const bW   = getBadge(avgW, nd.tgtW, false);
+    const npc  = c => c.replace('b-','np-');
+    html += `
+      <div class="np ${npc(bE.cls)}">
+        <div class="np-label">${heads[p]} — ⚡ Energy</div>
+        <div><span class="np-val">${avgE ?? '—'}</span>
+             <span class="np-unit">★</span></div>
+        <div class="np-tgt">Target ${nd.tgtE}★ &nbsp;
+          <span class="badge ${bE.cls}"
+                style="font-size:10px;padding:2px 7px">${bE.label}</span>
+        </div>
+      </div>
+      <div class="np ${npc(bW.cls)}">
+        <div class="np-label">${heads[p]} — 💧 Water</div>
+        <div><span class="np-val">${avgW ?? '—'}</span>
+             <span class="np-unit">★</span></div>
+        <div class="np-tgt">Target ${nd.tgtW}★ &nbsp;
+          <span class="badge ${bW.cls}"
+                style="font-size:10px;padding:2px 7px">${bW.label}</span>
+        </div>
+      </div>`;
+  });
+  document.getElementById('nabers-pills').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NABERS — BAR CHARTS (built once; tab switch recolours only)
+// ══════════════════════════════════════════════════════════════
+function buildNabersBarCharts() {
+  const pfKeys  = ['office','retail','logistics'];
+  const pfNames = ['Office','Retail','Logistics'];
+  const colors  = pfKeys.map(p => PF[p].full);
+  const evs     = pfKeys.map(p => calcWtdAvg(NABERS[p].assets,'E'));
+  const wvs     = pfKeys.map(p => calcWtdAvg(NABERS[p].assets,'W'));
+
+  function make(id, vals, target) {
+    const ctx = document.getElementById(id);
+    if (!ctx) return null;
+    return new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: pfNames,
+        datasets: [
+          { label: 'Weighted Avg ★',
+            data: vals,
+            backgroundColor: [...colors],
+            borderRadius: 6, borderSkipped: false,
+            barThickness: 56, order: 1 },
+          { label: `Target ${target}★`,
+            data: Array(3).fill(target),
+            type: 'line',
+            borderColor: '#0a1f3c', borderWidth: 2.5,
+            borderDash: [7,4], pointRadius: 0,
+            fill: false, order: 0 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode:'index', intersect:false },
+        plugins: {
+          legend: { display:true, position:'top',
+                    labels:{ font:{size:11}, boxWidth:20, padding:10 } },
+          tooltip: {
+            callbacks: {
+              label: i => i.datasetIndex === 0
+                ? `Weighted Avg: ${i.raw != null
+                    ? Number(i.raw).toFixed(2) : '—'}★`
+                : `Target: ${target}★`
+            }
+          }
+        },
+        scales: {
+          y: { min:0, max:6.4,
+               title:{ display:true,
+                       text:'NABERS Rating (★)', font:{size:11} },
+               ticks:{ callback: v => v+'★', stepSize:1 },
+               grid:{ color:'#f1f5f9' } },
+          x: { grid:{ display:false },
+               ticks:{ font:{ size:12, weight:'600' } } }
+        }
+      }
+    });
+  }
+
+  nabersEChartInst = make('nabersEChart', evs, 4.7);
+  nabersWChartInst = make('nabersWChart', wvs, 4.0);
+}
+
+function updateNabersBarHighlight(pf) {
+  if (!nabersEChartInst || !nabersWChartInst) return;
+  const pfKeys = ['office','retail','logistics'];
+  const colors = pfKeys.map(p =>
+    pf === 'all' || p === pf ? PF[p].full : PF[p].full + '44'
+  );
+  nabersEChartInst.data.datasets[0].backgroundColor = colors;
+  nabersWChartInst.data.datasets[0].backgroundColor = colors;
+  nabersEChartInst.update('none');
+  nabersWChartInst.update('none');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NABERS — HISTORICAL TREND
+// ══════════════════════════════════════════════════════════════
+function renderNabersHistChart(pf) {
+  if (nabersHChartInst) {
+    nabersHChartInst.destroy();
+    nabersHChartInst = null;
+  }
+  const ctx = document.getElementById('nabersHistChart');
+  if (!ctx) return;
+
+  const show = pf === 'all'
+    ? ['office','retail','logistics'] : [pf];
+
+  const datasets = show.map(p => {
+    const lbl = {
+      office:'Office', retail:'Retail', logistics:'Logistics'
+    }[p];
+    return {
+      label: `${lbl} Energy`,
+      data: NABERS_HIST[p],
+      borderColor: PF[p].full,
+      backgroundColor: PF[p].fill,
+      borderWidth: 2.5,
+      pointRadius: 6, pointHoverRadius: 8,
+      tension: 0.35,
+      fill: show.length === 1
+    };
+  });
+
+  datasets.push({
+    label: 'Target 4.7★',
+    data: Array(NABERS_HIST.labels.length).fill(4.7),
+    borderColor: '#374151', borderWidth: 2,
+    borderDash: [6,4], pointRadius: 0, fill: false
+  });
+
+  nabersHChartInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels: NABERS_HIST.labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { display:true, position:'top',
+                  labels:{ font:{size:11}, boxWidth:20, padding:10 } },
+        tooltip: {
+          callbacks: {
+            label: i => `${i.dataset.label}: ${
+              typeof i.raw === 'number' ? i.raw.toFixed(2) : '—'}★`
+          }
+        }
+      },
+      scales: {
+        y: { min:1, max:6,
+             title:{ display:true,
+                     text:'Weighted Avg NABERS Energy ★', font:{size:11} },
+             ticks:{ callback: v => v+'★', stepSize:0.5 },
+             grid:{ color:'#f1f5f9' } },
+        x: { grid:{ color:'#f1f5f9' }, ticks:{ font:{size:11} } }
+      }
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NABERS — ASSET TABLE + SUB-TABS
+// ══════════════════════════════════════════════════════════════
+function renderNabersAssetSection(pf) {
+  const c = document.getElementById('nabers-asset-section');
+  if (!c) return;
+  const activePf = pf === 'all' ? 'office' : pf;
+
+  c.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;
+                margin-bottom:10px;flex-wrap:wrap;">
+      <strong style="font-size:13px;color:#0a1f3c;">
+        Asset NABERS Breakdown &amp; Weighted Contribution
+      </strong>
+      <div style="display:flex;gap:6px;" id="nabers-subtabs">
+        <button class="tab-btn light sm ${activePf==='office'    ?'active':''}"
+          onclick="switchNabersSubTab(this,'office')">Office</button>
+        <button class="tab-btn light sm ${activePf==='retail'    ?'active':''}"
+          onclick="switchNabersSubTab(this,'retail')">Retail</button>
+        <button class="tab-btn light sm ${activePf==='logistics' ?'active':''}"
+          onclick="switchNabersSubTab(this,'logistics')">Logistics</button>
+      </div>
+      ${pf !== 'all'
+        ? '<span style="font-size:11.5px;color:#718096;">' +
+          '(use global filter above to switch portfolio)</span>'
+        : ''}
+    </div>
+    <div class="nt-wrap" id="nabers-table-inner"></div>`;
+
+  buildNabersTable(activePf);
+}
+
+function switchNabersSubTab(btn, pf) {
+  document.querySelectorAll('#nabers-subtabs .tab-btn')
+          .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildNabersTable(pf);
+}
+
+function buildNabersTable(pf) {
+  const inner = document.getElementById('nabers-table-inner');
+  if (!inner) return;
+
+  const nd     = NABERS[pf];
+  const avgE   = calcWtdAvg(nd.assets, 'E');
+  const avgW   = calcWtdAvg(nd.assets, 'W');
+  const totalA = nd.assets.reduce((s, a) => s + a.area, 0);
+
+  let rows = '';
+  nd.assets.forEach(a => {
+    const wt = ((a.area / totalA) * 100).toFixed(1);
+    const bw = Math.round(parseFloat(wt) * 1.8);
+    rows += `<tr>
+      <td>${a.name}</td>
+      <td>${a.area.toLocaleString()}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div style="background:#93c5fd;height:8px;
+                      border-radius:3px;width:${bw}px;"></div>
+          <span>${wt}%</span>
+        </div>
+      </td>
+      <td>${starBarHTML(a.E)}</td>
+      <td>${starBarHTML(a.W)}</td>
+    </tr>`;
+  });
+
+  inner.innerHTML = `
+    <table class="nt-table">
+      <thead><tr>
+        <th>Asset</th>
+        <th>Rated Area (sqm)*</th>
+        <th>Portfolio Weight</th>
+        <th>⚡ NABERS Energy</th>
+        <th>💧 NABERS Water</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr>
+          <td>Portfolio Weighted Average</td>
+          <td>${totalA.toLocaleString()}</td>
+          <td>100%</td>
+          <td>${starBarHTML(avgE)}</td>
+          <td>${starBarHTML(avgW)}</td>
+        </tr>
+        <tr>
+          <td>Portfolio Target</td>
+          <td>—</td><td>—</td>
+          <td>${starBarHTML(nd.tgtE)}</td>
+          <td>${starBarHTML(nd.tgtW)}</td>
+        </tr>
+      </tfoot>
+    </table>
+    <p style="font-size:11px;color:#a0aec0;margin-top:6px;">
+      * Rated areas are indicative dummy values — source from NABERS
+      certificates before production use.
+    </p>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TREND CHARTS
+//  All view  → 3 overlaid portfolio lines (no target line)
+//  Single pf → 1 actual line + 1 dashed target line
+// ══════════════════════════════════════════════════════════════
+function renderTrendCharts(pf) {
+  const cfgs = [
+    {id:'tr-emissions', key:'emissions',    kpi:KPIS[0]},
+    {id:'tr-renewable', key:'renewable',    kpi:KPIS[1]},
+    {id:'tr-peak',      key:'peakDemand',   kpi:KPIS[2]},
+    {id:'tr-water',     key:'waterEff',     kpi:KPIS[3]},
+    {id:'tr-landfill',  key:'landfill',     kpi:KPIS[4]},
+    {id:'tr-nabers',    key:'nabersEnergy', kpi:KPIS[5]}
+  ];
+
+  cfgs.forEach(({id, key, kpi}) => {
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (trendMap[id]) trendMap[id].destroy();
+
+    const unit = D.office[key].unit;
+    let datasets;
+
+    if (pf === 'all') {
+      datasets = ['office','retail','logistics'].map(p => ({
+        label: {office:'Office',retail:'Retail',logistics:'Logistics'}[p],
+        data: D[p][key].trend,
+        borderColor: PF[p].full,
+        backgroundColor: PF[p].fill,
+        borderWidth: 2.5,
+        pointRadius: 2, pointHoverRadius: 5,
+        tension: 0.4, fill: false
+      }));
+    } else {
+      const kd = D[pf][key];
+      datasets = [
+        { label: `${PF[pf].label} Actual`,
+          data: kd.trend,
+          borderColor: PF[pf].full,
+          backgroundColor: PF[pf].fill,
+          borderWidth: 2.5,
+          pointRadius: 3, pointHoverRadius: 6,
+          tension: 0.4, fill: true },
+        { label: `Target (${fmt(kd.target, kpi.dec)} ${unit})`,
+          data: Array(12).fill(kd.target),
+          borderColor: '#94a3b8', borderWidth: 1.5,
+          borderDash: [5,4], pointRadius: 0, fill: false }
+      ];
+    }
+
+    trendMap[id] = new Chart(ctx, {
+      type: 'line',
+      data: { labels: MONTHS, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode:'index', intersect:false },
+        plugins: {
+          legend: {
+            display: true, position: 'top',
+            labels: { font:{size:10.5}, boxWidth:18, padding:8 }
+          },
+          tooltip: {
+            callbacks: {
+              label: i =>
+                `${i.dataset.label}: ${fmt(i.raw, kpi.dec)} ${unit}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color:'#f1f5f9' },
+            ticks: { font:{size:10}, maxRotation:40 }
+          },
+          y: {
+            grid: { color:'#f1f5f9' },
+            ticks: {
+              font: { size:10.5 },
+              callback: v => fmt(v, kpi.dec)
+            },
+            title: {
+              display: true,
+              text: unit,
+              font: { size:10.5 }
+            }
+          }
+        }
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INITIALISE
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildCompTable();
+  renderNabersPills('all');
+  buildNabersBarCharts();
+  renderNabersHistChart('all');
+  renderNabersAssetSection('all');
+  renderTrendCharts('all');
+});
+</script>
+</body>
+</html>
